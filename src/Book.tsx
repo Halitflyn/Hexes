@@ -158,7 +158,7 @@ export default function BookView() {
     try {
       const spellString = JSON.stringify(activeSpell);
       const encoded = btoa(encodeURIComponent(spellString));
-      const url = `${window.location.origin}/?spell=${encoded}`;
+      const url = `${window.location.origin}${window.location.pathname}#/?spell=${encoded}`;
       navigator.clipboard.writeText(url);
       alert('Посилання на закляття скопійовано в буфер обміну!');
     } catch (e) {
