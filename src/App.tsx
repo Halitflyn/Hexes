@@ -1,11 +1,11 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link } from 'react-router-dom';
 import Creator from './Creator';
 import Book from './Book';
 import { Book as BookIcon, PenTool } from 'lucide-react';
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <div className="min-h-screen bg-slate-950 text-slate-300 font-sans flex flex-col">
         <nav className="h-14 bg-slate-900 border-b border-slate-800 flex items-center px-4 gap-4 shrink-0">
           <div className="font-bold text-purple-400 mr-4">Hex Casting</div>
@@ -25,6 +25,6 @@ export default function App() {
           </Routes>
         </div>
       </div>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
