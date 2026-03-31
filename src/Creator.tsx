@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Plus, Trash2, Download, Book, Sparkles, PenTool, XCircle, Check, ArrowLeft, ArrowRight, Minus, ArrowUp, ArrowDown, Upload, Share2, Wand2, Bot, Copy, Undo, RotateCw, Bookmark, Code, FileJson } from 'lucide-react';
+import { Plus, Trash2, Download, Book, Sparkles, PenTool, XCircle, Check, ArrowLeft, ArrowRight, Minus, ArrowUp, ArrowDown, Upload, Share2, Wand2, Bot, Copy, Undo, RotateCw, Bookmark, Code, FileJson, GripVertical } from 'lucide-react';
 import { HexCanvas } from './components/HexCanvas';
 import { HexMiniature } from './components/HexMiniature';
 import { generateId, parseHexAngles, recenterPath, pathToHexAngles, rotatePath } from './utils/hexUtils';
@@ -419,6 +419,34 @@ ${dictionaryContext}
     }));
   };
 
+  const [draggedPatternIndex, setDraggedPatternIndex] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedPatternIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedPatternIndex === null || draggedPatternIndex === targetIndex) return;
+
+    const newPatterns = [...(activeSpell.patterns || [])];
+    const [draggedItem] = newPatterns.splice(draggedPatternIndex, 1);
+    newPatterns.splice(targetIndex, 0, draggedItem);
+    
+    setActiveSpell({ ...activeSpell, patterns: newPatterns });
+    setDraggedPatternIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedPatternIndex(null);
+  };
+
   const handleMovePattern = (index: number, direction: number) => {
     const newPatterns = [...(activeSpell.patterns || [])];
     const targetIndex = index + direction;
@@ -622,7 +650,18 @@ ${dictionaryContext}
                   const isVerified = angles ? HEX_DICTIONARY.some(dp => dp.patterns.includes(angles)) : false;
                   
                   return (
-                    <div key={p.id} className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex gap-3 items-center group shadow-lg relative">
+                    <div 
+                      key={p.id} 
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, i)}
+                      onDragOver={(e) => handleDragOver(e, i)}
+                      onDrop={(e) => handleDrop(e, i)}
+                      onDragEnd={handleDragEnd}
+                      className={`bg-slate-950 p-3 rounded-xl border flex gap-3 items-center group shadow-lg relative transition-all ${draggedPatternIndex === i ? 'opacity-50 border-purple-500' : 'border-slate-800'}`}
+                    >
+                      <div className="cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 p-1 -ml-2">
+                        <GripVertical size={16} />
+                      </div>
                       {isVerified && (
                         <div className="absolute -top-1.5 -right-1.5 bg-yellow-500 text-slate-950 p-0.5 rounded-full shadow-lg z-10" title="Перевірений гліф">
                           <Sparkles size={10} fill="currentColor" />
@@ -644,8 +683,14 @@ ${dictionaryContext}
                         </div>
                       </div>
                       <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => handleRotatePattern(p.id)} className="p-1 text-slate-500 hover:text-indigo-400 transition-colors"><RotateCw size={14} /></button>
-                        <button onClick={() => handleRemovePattern(p.id)} className="p-1 text-slate-500 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+                        <div className="flex gap-1">
+                          <button onClick={() => handleMovePattern(i, -1)} disabled={i === 0} className="p-1 text-slate-500 hover:text-indigo-400 transition-colors disabled:opacity-30"><ArrowLeft size={14} /></button>
+                          <button onClick={() => handleMovePattern(i, 1)} disabled={i === (activeSpell.patterns || []).length - 1} className="p-1 text-slate-500 hover:text-indigo-400 transition-colors disabled:opacity-30"><ArrowRight size={14} /></button>
+                        </div>
+                        <div className="flex gap-1">
+                          <button onClick={() => handleRotatePattern(p.id)} className="p-1 text-slate-500 hover:text-indigo-400 transition-colors"><RotateCw size={14} /></button>
+                          <button onClick={() => handleRemovePattern(p.id)} className="p-1 text-slate-500 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+                        </div>
                       </div>
                     </div>
                   );
