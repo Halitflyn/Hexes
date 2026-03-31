@@ -24,7 +24,7 @@ export const HexMiniature = ({ path = [], className = "", fade = false }: { path
     ? `${minX - padding} ${minY - padding} ${maxX - minX + padding * 2} ${maxY - minY + padding * 2}`
     : `0 0 ${VIEWBOX_SIZE} ${VIEWBOX_SIZE}`;
 
-  const strokeWidth = Math.max(4, (maxX - minX) / 10);
+  const strokeWidth = Math.max(2, (maxX - minX) / 20);
 
   return (
     <svg viewBox={vBox} className={`w-full h-full ${className}`}>
@@ -59,7 +59,7 @@ export const HexMiniature = ({ path = [], className = "", fade = false }: { path
               strokeLinejoin="round" 
             />
           )}
-          <circle cx={pathNodes[0].x} cy={pathNodes[0].y} r={Math.max(4, (maxX - minX) / 20)} className="fill-white" />
+          <circle cx={pathNodes[0].x} cy={pathNodes[0].y} r={Math.max(2, (maxX - minX) / 40)} className="fill-white" />
         </>
       )}
     </svg>

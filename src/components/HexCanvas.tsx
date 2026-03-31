@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { getGridNodes, getNodeCoords, isNeighbor, hasEdge, VIEWBOX_SIZE, HEX_SIZE } from '../utils/hexUtils';
 
 export const HexCanvas = ({ 
@@ -17,25 +17,48 @@ export const HexCanvas = ({
   const svgRef = useRef<SVGSVGElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const [dimensions, setDimensions] = useState({ width: 1000, height: 1000 });
   const nodes = useMemo(() => getGridNodes(), []);
+
+  useEffect(() => {
+    if (!svgRef.current) return;
+    const observer = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        setDimensions({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height
+        });
+      }
+    });
+    observer.observe(svgRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   const safeCurrentPath = Array.isArray(currentPath) ? currentPath : [];
   const safePaths = Array.isArray(paths) ? paths : [];
 
-  const currentViewBoxSize = VIEWBOX_SIZE / (zoom / 100);
-  const offset = (VIEWBOX_SIZE - currentViewBoxSize) / 2;
-  const viewBoxString = `${offset} ${offset} ${currentViewBoxSize} ${currentViewBoxSize}`;
+  const currentViewBoxWidth = VIEWBOX_SIZE / (zoom / 100);
+  const currentViewBoxHeight = (VIEWBOX_SIZE * (dimensions.height / dimensions.width)) / (zoom / 100);
+  
+  const offsetX = (VIEWBOX_SIZE - currentViewBoxWidth) / 2;
+  const offsetY = (VIEWBOX_SIZE - currentViewBoxHeight) / 2;
+  
+  const viewBoxString = `${offsetX} ${offsetY} ${currentViewBoxWidth} ${currentViewBoxHeight}`;
   const visualScale = 100 / zoom;
 
   const getPointerCoords = (e: any) => {
     const svg = svgRef.current;
     if (!svg) return null;
+    
     let clientX = e.clientX, clientY = e.clientY;
     if (clientX === undefined && e.touches?.length > 0) {
       clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
     }
+
     const pt = svg.createSVGPoint();
     pt.x = clientX; pt.y = clientY;
     
+    // Use getScreenCTM to transform screen coordinates to SVG coordinates
     const ctm = svg.getScreenCTM();
     if (!ctm) return { x: clientX, y: clientY }; 
     
@@ -44,13 +67,23 @@ export const HexCanvas = ({
   };
 
   const findClosestNode = (coords: any) => {
-    if (!coords) return null;
+    if (!coords || !svgRef.current) return null;
+    
+    const svg = svgRef.current;
+    const clientWidth = svg.clientWidth || 500;
+    const currentViewBoxWidth = VIEWBOX_SIZE / (zoom / 100);
+    const screenToSvgScale = currentViewBoxWidth / clientWidth;
+    
+    // Minimum 35px hit area in screen coordinates
+    const minHitRadiusSvg = 35 * screenToSvgScale; 
+    const hitRadius = Math.max(HEX_SIZE * 2.2, minHitRadiusSvg);
+
     let closest = null, minDist = Infinity;
     nodes.forEach(node => {
       const dist = Math.hypot(node.x - coords.x, node.y - coords.y);
       if (dist < minDist) { minDist = dist; closest = node; }
     });
-    return minDist < HEX_SIZE * 1.2 ? closest : null; 
+    return minDist < hitRadius ? closest : null; 
   };
 
   const handlePointerDown = (e: any) => {
@@ -58,6 +91,10 @@ export const HexCanvas = ({
     const coords = getPointerCoords(e);
     const node = findClosestNode(coords);
     if (node) { 
+      // Check if node is already occupied by another path in multi-mode
+      const isOccupied = safePaths.some(path => path.includes(node.id));
+      if (isOccupied) return;
+
       setIsDrawing(true); 
       if (safeCurrentPath.length > 0 && safeCurrentPath[safeCurrentPath.length - 1] === node.id) {
         // Continue drawing from the last node
@@ -73,6 +110,10 @@ export const HexCanvas = ({
     const node = findClosestNode(coords);
     setHoveredNodeId(node ? node.id : null);
     if (!isDrawing || !node || safeCurrentPath.length === 0) return;
+
+    // Check if node is already occupied by another path in multi-mode
+    const isOccupied = safePaths.some(path => path.includes(node.id));
+    if (isOccupied) return;
 
     const lastNodeId = safeCurrentPath[safeCurrentPath.length - 1];
     if (node.id !== lastNodeId) {
@@ -107,10 +148,10 @@ export const HexCanvas = ({
 
     return (
       <g key={`path-group-${index}`} style={{ opacity }}>
-        <polyline points={polylinePoints} fill="none" stroke={strokeColor} strokeWidth={12 * visualScale} strokeLinecap="round" strokeLinejoin="round" className={isCurrent ? "drop-shadow-[0_0_12px_rgba(192,132,252,0.8)] pointer-events-none" : "pointer-events-none"} />
-        {pathNodes.map((node, i) => <circle key={`node-${index}-${i}`} cx={node.x} cy={node.y} r={7 * visualScale} className="fill-purple-300 pointer-events-none" />)}
-        <circle cx={pathNodes[0].x} cy={pathNodes[0].y} r={12 * visualScale} strokeWidth={4 * visualScale} className="fill-white stroke-purple-600 pointer-events-none drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
-        {pathNodes.length > 1 && <circle cx={pathNodes[pathNodes.length - 1].x} cy={pathNodes[pathNodes.length - 1].y} r={12 * visualScale} className="fill-fuchsia-300 pointer-events-none drop-shadow-[0_0_12px_rgba(217,70,239,1)]" />}
+        <polyline points={polylinePoints} fill="none" stroke={strokeColor} strokeWidth={9.6 * visualScale} strokeLinecap="round" strokeLinejoin="round" className={isCurrent ? "drop-shadow-[0_0_12px_rgba(192,132,252,0.8)] pointer-events-none" : "pointer-events-none"} />
+        {pathNodes.map((node, i) => <circle key={`node-${index}-${i}`} cx={node.x} cy={node.y} r={2.4 * visualScale} className="fill-purple-300 pointer-events-none" />)}
+        <circle cx={pathNodes[0].x} cy={pathNodes[0].y} r={6.4 * visualScale} strokeWidth={3.2 * visualScale} className="fill-white stroke-purple-600 pointer-events-none drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
+        {pathNodes.length > 1 && <circle cx={pathNodes[pathNodes.length - 1].x} cy={pathNodes[pathNodes.length - 1].y} r={6.4 * visualScale} className="fill-fuchsia-300 pointer-events-none drop-shadow-[0_0_12px_rgba(217,70,239,1)]" />}
       </g>
     );
   };
@@ -129,12 +170,14 @@ export const HexCanvas = ({
         {nodes.map(node => {
           const isCurrentNeighbor = isDrawing && lastNode && isNeighbor(lastNode, node) && !hasEdge(safeCurrentPath, lastNodeId!, node.id);
           const isHovered = hoveredNodeId === node.id;
+          const isOccupied = safePaths.some(path => path.includes(node.id));
+
           return (
             <circle 
               key={node.id} cx={node.x} cy={node.y} 
-              r={isCurrentNeighbor ? (6 * visualScale) : (isHovered ? (8 * visualScale) : (3.5 * visualScale))} 
-              className={`transition-all duration-150 ${isCurrentNeighbor ? 'fill-fuchsia-400 drop-shadow-[0_0_8px_rgba(232,121,249,0.8)] animate-pulse' : isHovered ? 'fill-slate-400 stroke-purple-500' : 'fill-slate-700'}`} 
-              strokeWidth={isHovered ? (2 * visualScale) : 0}
+              r={isCurrentNeighbor ? (3.2 * visualScale) : (isHovered ? (4.8 * visualScale) : (1.6 * visualScale))} 
+              className={`transition-all duration-150 ${isOccupied ? 'fill-slate-800 opacity-30' : isCurrentNeighbor ? 'fill-fuchsia-400 drop-shadow-[0_0_8px_rgba(232,121,249,0.8)] animate-pulse' : isHovered ? 'fill-slate-400 stroke-purple-500' : 'fill-slate-500'}`} 
+              strokeWidth={isHovered ? (3.2 * visualScale) : 0}
             />
           );
         })}

@@ -1,0 +1,618 @@
+[
+  {
+    "name": "Mind's Reflection",
+    "type": "→ entity",
+    "patterns": [
+      "qaq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Compass' Purification",
+    "type": "entity → vector",
+    "patterns": [
+      "aa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Compass' Purification",
+    "type": "entity → vector",
+    "patterns": [
+      "dd"
+    ],
+    "description": "0.-1.0"
+  },
+  {
+    "name": "Alidade's Purification",
+    "type": "entity → vector",
+    "patterns": [
+      "wa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Stadiometer's Prfn.",
+    "type": "entity → num",
+    "patterns": [
+      "awq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Pace Purification",
+    "type": "entity → vector",
+    "patterns": [
+      "wq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Reveal",
+    "type": "any → any",
+    "patterns": [
+      "de"
+    ],
+    "description": "Displays the top iota of the stack to me."
+  },
+  {
+    "name": "Archer's Distillation",
+    "type": "vector, vector → vector",
+    "patterns": [
+      "wqaawdd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Architect's Distillation",
+    "type": "vector, vector → vector",
+    "patterns": [
+      "weddwaa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Scout's Distillation",
+    "type": "vector, vector → entity",
+    "patterns": [
+      "weaqa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Numerical Reflection",
+    "type": "→ number",
+    "patterns": [
+      "aqaa"
+    ],
+    "description": "0; wa -<+1*2=2>; wq -<+1+5=6>; ww -<+1+1=2>; we -<+1+10=11>; wd -<+1/2=0.5>"
+  },
+  {
+    "name": "Additive Distillation",
+    "type": "num|vec, num|vec → num|vec",
+    "patterns": [
+      "waaw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Subtractive Distillation",
+    "type": "num|vec, num|vec → num|vec",
+    "patterns": [
+      "wddw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Multiplicative Dstl.",
+    "type": "num|vec, num|vec → num|vec",
+    "patterns": [
+      "waqaw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Division Dstl.",
+    "type": "num|vec, num|vec → num|vec",
+    "patterns": [
+      "wdedw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Length Purification",
+    "type": "num|vec → number",
+    "patterns": [
+      "wqaqw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Power Distillation",
+    "type": "num|vec, num|vec → num|vec",
+    "patterns": [
+      "wedew"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Floor Purification",
+    "type": "num|vec → num|vec",
+    "patterns": [
+      "ewq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Ceiling Purification",
+    "type": "num|vec → num|vec",
+    "patterns": [
+      "qwe"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Vector Exaltation",
+    "type": "num, num, num → vector",
+    "patterns": [
+      "eqqqqq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Vector Disintegration",
+    "type": "vector → num, num, num",
+    "patterns": [
+      "qeeeee"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Modulus Distillation",
+    "type": "num|vec, num|vec → num|vec",
+    "patterns": [
+      "addwaad"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Axial Purification",
+    "type": "vec|num → vec|num",
+    "patterns": [
+      "qqqqqaww"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Entropy Reflection",
+    "type": "→ num",
+    "patterns": [
+      "eqqq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "True Reflection",
+    "type": "→ bool",
+    "patterns": [
+      "aqae"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "False Reflection",
+    "type": "→ bool",
+    "patterns": [
+      "dedq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Nullary Reflection",
+    "type": "→ null",
+    "patterns": [
+      "d"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Vector Reflection Zero",
+    "type": "→ vector",
+    "patterns": [
+      "qqqqq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Vector Rfln. +X/-X",
+    "type": "→ vector",
+    "patterns": [],
+    "description": "qqqqqea /<eeeeeqa>"
+  },
+  {
+    "name": "Vector Rfln. +Y/-Y",
+    "type": "→ vector",
+    "patterns": [],
+    "description": "qqqqqew /<eeeeeqw>"
+  },
+  {
+    "name": "Vector Rfln. +Z/-Z",
+    "type": "→ vector",
+    "patterns": [],
+    "description": "qqqqqed /<eeeeeqa>"
+  },
+  {
+    "name": "Circle's Reflection",
+    "type": "→ num",
+    "patterns": [
+      "eawae"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Arc's Reflection",
+    "type": "→ num",
+    "patterns": [
+      "qdwdq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Euler's Reflection",
+    "type": "→ num",
+    "patterns": [
+      "aaq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Novice's Gambit",
+    "type": "any →",
+    "patterns": [
+      "a"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Jester's Gambit",
+    "type": "any, any → any, any",
+    "patterns": [
+      "aawdd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Rotation Gambit",
+    "type": "any, any, any → any, any, any",
+    "patterns": [
+      "aaeaa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Rotation Gambit II",
+    "type": "any, any, any → any, any, any",
+    "patterns": [
+      "ddqdd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Gemini Decomposition",
+    "type": "any → any, any",
+    "patterns": [
+      "aadaa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Prospector's Gambit",
+    "type": "any, any → any, any, any",
+    "patterns": [
+      "aaedd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Undertaker's Gambit",
+    "type": "any, any → any, any, any",
+    "patterns": [
+      "ddqaa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Gemini Gambit",
+    "type": "any, number → many",
+    "patterns": [
+      "aadaadaa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Dioscuri Gambit",
+    "type": "any, any → any, any, any, any",
+    "patterns": [
+      "aadadaaw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Flock's Reflection",
+    "type": "→ number",
+    "patterns": [
+      "qwaeawqaeaqa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Fisherman's Gambit",
+    "type": "number → any",
+    "patterns": [
+      "ddad"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Fisherman's Gambit II",
+    "type": "number → any",
+    "patterns": [
+      "aada"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Bookkeeper's Gambit",
+    "type": "many → many",
+    "patterns": [],
+    "description": "aeea /<eada>/<ae>"
+  },
+  {
+    "name": "Swindler's Gambit",
+    "type": "many, number → many",
+    "patterns": [
+      "qaawdde"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Augur's Purification",
+    "type": "any → bool",
+    "patterns": [
+      "aw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Length Purification",
+    "type": "bool → number",
+    "patterns": [
+      "wqaqw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Negation Purification",
+    "type": "bool → bool",
+    "patterns": [
+      "dw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Disjunction Distillation",
+    "type": "bool, bool → bool",
+    "patterns": [
+      "waw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Conjunction Distillation",
+    "type": "bool, bool → bool",
+    "patterns": [
+      "wdw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Exclusion Distillation",
+    "type": "bool, bool → bool",
+    "patterns": [
+      "dwa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Augur's Exaltation",
+    "type": "bool, any, any → any",
+    "patterns": [
+      "awdd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Equality Distillation",
+    "type": "any, any → bool",
+    "patterns": [
+      "ad"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Inequality Distillation",
+    "type": "any, any → bool",
+    "patterns": [
+      "da"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Maximus Distillation",
+    "type": "number, number → bool",
+    "patterns": [
+      "e"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Minimus Distillation",
+    "type": "number, number → bool",
+    "patterns": [
+      "q"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Maximus Distillation II",
+    "type": "number, number → bool",
+    "patterns": [
+      "ee"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Minimus Distillation II",
+    "type": "number, number → bool",
+    "patterns": [
+      "qq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Entity Purification",
+    "type": "vector → entity or null",
+    "patterns": [
+      "qqqqqdaqa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Entity Prfn.: Animal",
+    "type": "vector → entity or null",
+    "patterns": [
+      "qqqqqdaqaawa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Entity Prfn.: Monster",
+    "type": "vector → entity or null",
+    "patterns": [
+      "qqqqqdaqaawq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Entity Prfn.: Item",
+    "type": "vector → entity or null",
+    "patterns": [
+      "qqqqqdaqaaww"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Entity Prfn.: Player",
+    "type": "vector → entity or null",
+    "patterns": [
+      "qqqqqdaqaawe"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Entity Prfn.: Living",
+    "type": "vector → entity or null",
+    "patterns": [
+      "qqqqqdaqaawd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Zone Dstl.: Animal",
+    "type": "vector, number → list",
+    "patterns": [
+      "qqqqqwdeddwa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Zone Dstl.: Non-Animal",
+    "type": "vector, number → list",
+    "patterns": [
+      "eeeeewaqaawa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Zone Dstl.: Monster",
+    "type": "vector, number → list",
+    "patterns": [
+      "qqqqqwdeddwq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Zone Dstl.: Non-Monster",
+    "type": "vector, number → list",
+    "patterns": [
+      "eeeeewaqaawq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Zone Dstl.: Item",
+    "type": "vector, number → list",
+    "patterns": [
+      "qqqqqwdeddww"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Zone Dstl.: Non-Item",
+    "type": "vector, number → list",
+    "patterns": [
+      "eeeeewaqaaww"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Zone Dstl.: Player",
+    "type": "vector, number → list",
+    "patterns": [
+      "qqqqqwdeddwe"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Zone Dstl.: Non-Player",
+    "type": "vector, number → list",
+    "patterns": [
+      "eeeeewaqaawe"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Zone Dstl.: Living",
+    "type": "vector, number → list",
+    "patterns": [
+      "qqqqqwdeddwd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Zone Dstl.: Non-Living",
+    "type": "vector, number → list",
+    "patterns": [
+      "eeeeewaqaawd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Zone Dstl.: Any",
+    "type": "vector, number → list",
+    "patterns": [
+      "qqqqqwded"
+    ],
+    "description": "Опис відсутній"
+  }
+]

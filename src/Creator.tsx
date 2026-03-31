@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Plus, Trash2, Download, Book, Sparkles, PenTool, XCircle, Check, ArrowLeft, ArrowRight, Minus, ArrowUp, ArrowDown, Upload, Share2, Wand2, Bot, Copy, Undo, RotateCw, Bookmark, Code } from 'lucide-react';
+import { Plus, Trash2, Download, Book, Sparkles, PenTool, XCircle, Check, ArrowLeft, ArrowRight, Minus, ArrowUp, ArrowDown, Upload, Share2, Wand2, Bot, Copy, Undo, RotateCw, Bookmark, Code, FileJson } from 'lucide-react';
 import { HexCanvas } from './components/HexCanvas';
 import { HexMiniature } from './components/HexMiniature';
 import { generateId, parseHexAngles, recenterPath, pathToHexAngles, rotatePath } from './utils/hexUtils';
+import { HEX_DICTIONARY } from './constants/hexDictionary';
 
 export default function Creator() {
   const location = useLocation();
@@ -13,6 +14,8 @@ export default function Creator() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [showAiModal, setShowAiModal] = useState(false);
+  const [showConfirmNew, setShowConfirmNew] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [aiIntention, setAiIntention] = useState('');
   const [aiResponse, setAiResponse] = useState('');
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
@@ -28,10 +31,10 @@ export default function Creator() {
   const [draftPaths, setDraftPaths] = useState<string[][]>([]);
   const [currentDraftPath, setCurrentDraftPath] = useState<string[]>([]);
   const [draftHistory, setDraftHistory] = useState<{paths: string[][], current: string[]}[]>([]);
-  const [zoom, setZoom] = useState(window.innerWidth < 768 ? 200 : 100);
+  const [zoom, setZoom] = useState(window.innerWidth < 768 ? 250 : 100);
   const [startDir, setStartDir] = useState(0); // 0 to 5 for the 6 hex directions
 
-  const getDefaultZoom = () => window.innerWidth < 768 ? 200 : 100;
+  const getDefaultZoom = () => window.innerWidth < 768 ? 250 : 100;
 
   useEffect(() => {
     const saved = localStorage.getItem('hex_casting_grimoire');
@@ -69,7 +72,7 @@ export default function Creator() {
           navigate('.', { replace: true });
         } catch (e) {
           console.error("Failed to parse shared spell", e);
-          alert("Не вдалося завантажити закляття з посилання. Можливо, посилання пошкоджене.");
+          setAlertMessage("Не вдалося завантажити закляття з посилання. Можливо, посилання пошкоджене.");
         }
       }
     }
@@ -89,6 +92,30 @@ export default function Creator() {
   const saveHistory = () => {
     setDraftHistory(prev => [...prev, { paths: draftPaths, current: currentDraftPath }]);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger shortcuts if user is typing in an input or textarea
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        handleUndo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSaveToGrimoire();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        handleAddGlyph();
+      } else if (e.key === 'Delete' || e.key === 'Escape') {
+        e.preventDefault();
+        handleClearCanvas();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [draftPaths, currentDraftPath, draftHistory, activeSpell]);
 
   const handlePathChange = (newPath: string[]) => {
     saveHistory();
@@ -117,6 +144,41 @@ export default function Creator() {
     }
   };
 
+  const handleDownloadDictionary = () => {
+    downloadJsonStr(HEX_DICTIONARY, 'hex_casting_dictionary.json');
+  };
+
+  const handleCopyNotebookLMPrompt = () => {
+    const dictionaryText = HEX_DICTIONARY.map(p => `- ${p.name} (${p.type}): ${p.patterns.join(', ')}`).join('\n');
+    const prompt = `Універсальний системний промпт для Hex Casting
+Ти — експерт-заклинач у моді Hex Casting для Minecraft. Твоє завдання — генерувати максимально оптимізовані, робочі та елегантні закляття на основі запитів користувача.
+
+СЛОВНИК БАЗОВИХ ГЛІФІВ:
+${dictionaryText}
+
+ДОДАТКОВІ ГЛІФИ (ДІЇ ТА ЗНАЧЕННЯ):
+- Place Block (Поставити блок): eeeeede
+- Break Block (Зламати блок): qaqqqqq
+- Place Phantom Block (Поставити примарний блок): qqa
+- Число 5 (Numerical Reflection: 5): aqaaq
+
+ПРАВИЛА НАПИСАННЯ ЗАКЛЯТЬ (ОБОВ'ЯЗКОВО ДО ВИКОНАННЯ):
+1. Математична оптимізація: НІКОЛИ не застосовуй багаторазове додавання векторів (наприклад, waaw кілька разів підряд) для обчислення дистанції чи висоти. ЗАВЖДИ використовуй множення (Multiplicative Distillation).
+Приклад: Щоб отримати висоту 5 блоків, створи одиничний вектор Y (qqqqqew), напиши число 5 (aqaaq) та перемнож їх (waqaw), після чого додай до стартової координати.
+
+2. Фізика гри (Гравітаційні блоки): Будь-який блок, що має падати (ковадло, сталактит, пісок тощо), не може бути розміщений просто в повітрі. Для таких атак завжди дій за таким алгоритмом:
+- Знайди координату цілі.
+- Створи примарний блок-опору (qqa) на 1 блок вище за точку появи гравітаційного блоку (наприклад, H+1, де H — бажана висота падіння).
+- Встанови сам атакуючий/гравітаційний блок (eeeeede) безпосередньо під цією опорою (на висоті H).
+- Зламай примарний блок-опору (qaqqqqq), щоб запустити падіння гравітаційного блоку на ціль.
+
+3. Оптимізація стека: Якщо потрібно виконати кілька дій навколо однієї координати цілі, обов'язково дублюй її за допомогою Gemini Decomposition (aadaa). Використовуй маніпуляції зі стеком, наприклад Jester's Gambit (aawdd), щоб правильно розмістити вектори та цілі перед застосуванням гліфів дії.
+
+ФОРМАТ ВІДПОВІДІ: Відповідай ВИКЛЮЧНО послідовністю патернів (літер), розділених комами і пробілами. Жодних пояснень, привітань, вступних слів чи коментарів. Лише чистий код закляття.`;
+    navigator.clipboard.writeText(prompt);
+    setAlertMessage('Промпт для NotebookLM (з пріоритетом словника) скопійовано!');
+  };
+
   const handleGenerateAiSpell = async () => {
     if (!aiIntention.trim()) return;
     setIsGeneratingAi(true);
@@ -126,15 +188,37 @@ export default function Creator() {
       const apiKey = userApiKey || import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "dummy_key";
       const ai = new GoogleGenAI({ apiKey });
       
-      const prompt = `Я граю в гру з магічною системою на гексагональній сітці (Hex Casting). Руни малюються послідовними відрізками. Літери керують напрямком відносно попереднього кроку: w (прямо), e (праворуч 60°), d (праворуч 120°), s (назад), a (ліворуч 120°), q (ліворуч 60°). Стартовий напрямок - Схід. 
+      const dictionaryContext = HEX_DICTIONARY.map(p => `- ${p.name}: ${p.patterns.join(', ')} (${p.type})`).join('\n');
+      
+      const prompt = `Універсальний системний промпт для Hex Casting
+Ти — експерт-заклинач у моді Hex Casting для Minecraft. Твоє завдання — генерувати максимально оптимізовані, робочі та елегантні закляття на основі запитів користувача.
 
-Напиши закляття для: ${aiIntention}
+СЛОВНИК БАЗОВИХ ГЛІФІВ:
+${dictionaryContext}
 
-ОБОВ'ЯЗКОВО використай пошук в інтернеті, щоб знайти правильні патерни (наприклад, Mind's Reflection, Archer's Distillation, Ignite) та їхні точні послідовності кутів (angles).
+ДОДАТКОВІ ГЛІФИ (ДІЇ ТА ЗНАЧЕННЯ):
+- Place Block (Поставити блок): eeeeede
+- Break Block (Зламати блок): qaqqqqq
+- Place Phantom Block (Поставити примарний блок): qqa
+- Число 5 (Numerical Reflection: 5): aqaaq
 
-Твоя кінцева відповідь має містити ТІЛЬКИ послідовність рун, розділених комою або пробілом. Використовуй лише літери q, w, e, a, s, d. Ніяких інших слів, пояснень чи форматувань.
+ПРАВИЛА НАПИСАННЯ ЗАКЛЯТЬ (ОБОВ'ЯЗКОВО ДО ВИКОНАННЯ):
+1. Математична оптимізація: НІКОЛИ не застосовуй багаторазове додавання векторів (наприклад, waaw кілька разів підряд) для обчислення дистанції чи висоти. ЗАВЖДИ використовуй множення (Multiplicative Distillation).
+Приклад: Щоб отримати висоту 5 блоків, створи одиничний вектор Y (qqqqqew), напиши число 5 (aqaaq) та перемнож їх (waqaw), після чого додай до стартової координати.
 
-Приклад ідеальної відповіді: qaq, aa, qaq, wa, weaqa, aaqawawa`;
+2. Фізика гри (Гравітаційні блоки): Будь-який блок, що має падати (ковадло, сталактит, пісок тощо), не може бути розміщений просто в повітрі. Для таких атак завжди дій за таким алгоритмом:
+- Знайди координату цілі.
+- Створи примарний блок-опору (qqa) на 1 блок вище за точку появи гравітаційного блоку.
+- Встанови сам атакуючий/гравітаційний блок (eeeeede) безпосередньо під цією опорою.
+- Зламай примарний блок-опору (qaqqqqq), щоб запустити падіння гравітаційного блоку на ціль.
+
+3. Оптимізація стека: Якщо потрібно виконати кілька дій навколо однієї координати цілі, обов'язково дублюй її за допомогою Gemini Decomposition (aadaa). Використовуй маніпуляції зі стеком, наприклад Jester's Gambit (aawdd), щоб правильно розмістити вектори та цілі перед застосуванням гліфів дії.
+
+ЗАПИТ КОРИСТУВАЧА: Напиши закляття для: ${aiIntention}
+
+ОБОВ'ЯЗКОВО використай пошук в інтернеті, щоб знайти правильні патерни (наприклад, Mind's Reflection, Archer's Distillation, Ignite) та їхні точні послідовності кутів (angles), якщо їх немає в списку вище.
+
+ФОРМАТ ВІДПОВІДІ: Відповідай ВИКЛЮЧНО послідовністю патернів (літер), розділених комами і пробілами. Жодних пояснень, привітань, вступних слів чи коментарів. Лише чистий код закляття.`;
       
       const response = await ai.models.generateContent({
         model: 'gemini-3.1-pro-preview',
@@ -161,9 +245,10 @@ export default function Creator() {
         description: `Згенеровано ШІ за запитом: ${aiIntention}`,
         patterns: rawPatterns.map((patternStr, index) => {
           const startDir = dict[patternStr] !== undefined ? dict[patternStr] : 0;
+          const knownPattern = HEX_DICTIONARY.find(p => p.patterns.includes(patternStr));
           return {
             id: generateId(),
-            name: `Гліф ${index + 1} (${patternStr})`,
+            name: knownPattern ? knownPattern.name : `Гліф ${index + 1} (${patternStr})`,
             path: recenterPath(parseHexAngles(patternStr, startDir))
           };
         }),
@@ -187,7 +272,7 @@ export default function Creator() {
     const rawPatterns = manualAiCode.toLowerCase().split(/[\s,]+/).filter(p => /^[qweasd]+$/.test(p));
     
     if (rawPatterns.length === 0) {
-      alert("Не вдалося розпізнати руни у введеному коді. Використовуйте лише літери q, w, e, a, s, d.");
+      setAlertMessage("Не вдалося розпізнати руни у введеному коді. Використовуйте лише літери q, w, e, a, s, d.");
       return;
     }
 
@@ -195,9 +280,10 @@ export default function Creator() {
 
     const newPatterns = rawPatterns.map((patternStr, index) => {
       const startDir = dict[patternStr] !== undefined ? dict[patternStr] : 0;
+      const knownPattern = HEX_DICTIONARY.find(p => p.patterns.includes(patternStr));
       return {
         id: generateId(),
-        name: `Гліф ${index + 1} (${patternStr})`,
+        name: knownPattern ? knownPattern.name : `Гліф ${index + 1} (${patternStr})`,
         path: recenterPath(parseHexAngles(patternStr, startDir))
       };
     });
@@ -231,25 +317,31 @@ export default function Creator() {
       const encoded = btoa(encodeURIComponent(spellString));
       const url = `${window.location.origin}${window.location.pathname}#/?spell=${encoded}`;
       navigator.clipboard.writeText(url);
-      alert('Посилання на закляття скопійовано в буфер обміну!');
+      setAlertMessage('Посилання на закляття скопійовано в буфер обміну!');
     } catch (e) {
       console.error("Share error", e);
-      alert('Помилка при створенні посилання. Можливо, закляття занадто велике.');
+      setAlertMessage('Помилка при створенні посилання. Можливо, закляття занадто велике.');
     }
   };
 
   const handleAddGlyph = () => {
-    const newPatterns = isMultiMode ? draftPaths.map(path => ({
-      id: generateId(),
-      name: '',
-      path: path,
-      startDir
-    })) : [];
+    const newPatterns = isMultiMode ? draftPaths.map(path => {
+      const { angles } = pathToHexAngles(path);
+      const knownPattern = angles ? HEX_DICTIONARY.find(p => p.patterns.includes(angles)) : null;
+      return {
+        id: generateId(),
+        name: knownPattern ? knownPattern.name : '',
+        path: path,
+        startDir
+      };
+    }) : [];
     
     if (currentDraftPath.length > 1) {
+      const { angles } = pathToHexAngles(currentDraftPath);
+      const knownPattern = angles ? HEX_DICTIONARY.find(p => p.patterns.includes(angles)) : null;
       newPatterns.push({
         id: generateId(),
-        name: '',
+        name: knownPattern ? knownPattern.name : '',
         path: currentDraftPath,
         startDir
       });
@@ -280,14 +372,31 @@ export default function Creator() {
     const spellToSave = { ...activeSpell, name: activeSpell.name || 'Безіменне закляття' };
     if (exists) setSpells(spells.map(s => s.id === spellToSave.id ? spellToSave : s));
     else setSpells([spellToSave, ...spells]);
-    alert('Закляття збережено до Гримуару!');
+    setAlertMessage('Закляття збережено до Гримуару!');
   };
 
   const handleStartNewSpell = () => {
-    setActiveSpell({ id: generateId(), name: '', description: '', patterns: [], createdAt: new Date().toISOString() });
-    setCurrentDraftPath([]); 
+    if ((activeSpell.patterns || []).length > 0) {
+      setShowConfirmNew(true);
+      return;
+    }
+    confirmStartNew();
+  };
+
+  const confirmStartNew = () => {
+    setActiveSpell({
+      id: generateId(),
+      name: '',
+      description: '',
+      patterns: [],
+      mediaUrls: [],
+      createdAt: new Date().toISOString()
+    });
+    setDraftPaths([]);
+    setCurrentDraftPath([]);
     setDraftHistory([]);
-    setZoom(getDefaultZoom()); 
+    setZoom(getDefaultZoom());
+    setShowConfirmNew(false);
   };
 
   const handleRemovePattern = (patternId: string) => {
@@ -363,168 +472,230 @@ export default function Creator() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-950 text-slate-300">
+    <div className="flex-1 flex flex-col bg-slate-950 text-slate-200 no-scrollbar h-screen overflow-hidden">
       <input type="file" accept=".json" ref={fileInputRef} onChange={handleImportJson} className="hidden" />
 
-      <div className="flex flex-col md:flex-row h-full overflow-hidden">
-        {/* Ліва панель - Малювання */}
-        <div className="flex-1 flex flex-col border-r border-slate-800">
-          <div className="p-3 md:p-4 bg-slate-900 border-b border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center shrink-0 gap-3 md:gap-0">
-            <h2 className="font-bold text-lg">Малювання гліфу</h2>
-            <div className="flex flex-wrap gap-2 w-full md:w-auto">
-              <button 
-                onClick={() => {
-                  setIsMultiMode(!isMultiMode);
-                  setDraftPaths([]);
-                  setCurrentDraftPath([]);
-                  setDraftHistory([]);
-                }} 
-                className={`flex-1 md:flex-none px-2 py-1.5 md:px-3 md:py-1.5 rounded-lg text-xs md:text-sm font-medium transition-colors ${isMultiMode ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
-                title="Перемкнути режим малювання"
-              >
-                {isMultiMode ? 'Кілька' : 'Один'}
-              </button>
-              <button 
-                onClick={() => setStartDir((startDir + 1) % 6)} 
-                className="flex-1 md:flex-none px-2 py-1.5 md:px-3 md:py-1.5 bg-slate-800 rounded-lg text-xs md:text-sm hover:bg-slate-700 transition-colors"
-                title="Змінити початковий напрямок"
-              >
-                Напрямок: {['Схід', 'Пд-Сх', 'Пд-Зх', 'Захід', 'Пн-Зх', 'Пн-Сх'][startDir]}
-              </button>
-              <button onClick={handleStartNewSpell} className="flex-1 md:flex-none px-2 py-1.5 md:px-3 md:py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs md:text-sm transition-colors">
-                Нове
-              </button>
-              <button onClick={() => setShowAiModal(true)} className="flex-1 md:flex-none px-2 py-1.5 md:px-3 md:py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs md:text-sm transition-colors flex items-center justify-center gap-1">
-                <Bot size={14} /> ШІ
-              </button>
-            </div>
-          </div>
-          
-          {/* Drawn Glyphs Bar */}
-          {activeSpell.patterns && activeSpell.patterns.length > 0 && (
-            <div className="bg-slate-900/50 border-b border-slate-800 p-2 flex gap-2 overflow-x-auto custom-scrollbar shrink-0">
-              {activeSpell.patterns.map((p: any, i: number) => (
-                <div key={p.id} className="flex flex-col items-center gap-1 shrink-0">
-                  <div className="w-10 h-10 bg-slate-950 rounded border border-slate-800 p-1">
-                    <HexMiniature path={p.path} />
-                  </div>
-                  <span className="text-[10px] text-slate-500">#{i + 1}</span>
+      {/* Main Content Area - Everything scrolls together */}
+      <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col pt-12">
+        {/* Top Section: Spell Details & Actions - Now scrollable */}
+        <div className="shrink-0 bg-slate-900 border-b border-slate-800 p-4 md:p-6">
+          <div className="w-full flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+              <div className="flex-1 w-full min-w-0">
+                <input 
+                  type="text" 
+                  value={activeSpell.name || ''} 
+                  onChange={(e) => setActiveSpell({ ...activeSpell, name: e.target.value })} 
+                  placeholder="Назва закляття..." 
+                  className="w-full bg-transparent text-2xl md:text-4xl font-black text-white placeholder-slate-800 outline-none border-b border-transparent focus:border-purple-500/30 transition-all"
+                />
+                <textarea 
+                  value={activeSpell.description || ''} 
+                  onChange={(e) => setActiveSpell({ ...activeSpell, description: e.target.value })} 
+                  placeholder="Опис ефекту..." 
+                  className="w-full bg-transparent text-sm md:text-base text-slate-400 placeholder-slate-800 outline-none resize-none mt-2 h-12 md:h-16 custom-scrollbar"
+                />
+              </div>
+              
+              <div className="flex flex-wrap gap-2 w-full md:w-auto shrink-0 justify-end items-center">
+                <div className="flex gap-1 mr-1 border-r border-slate-800 pr-2">
+                  <button onClick={() => fileInputRef.current?.click()} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-300 transition-colors" title="Імпортувати"><Upload size={18} /></button>
+                  <button onClick={() => handleDownloadSpell(activeSpell)} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-300 transition-colors" title="Експортувати"><Download size={18} /></button>
+                  <button onClick={handleShareSpell} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-300 transition-colors" title="Поділитися"><Share2 size={18} /></button>
                 </div>
-              ))}
+                <button 
+                  onClick={handleStartNewSpell} 
+                  className="px-3 py-2 bg-slate-800 hover:bg-red-900/30 hover:text-red-400 text-slate-400 rounded-xl text-xs font-bold transition-colors border border-slate-700"
+                >
+                  Нове
+                </button>
+                <button 
+                  onClick={() => setShowAiModal(true)} 
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg shadow-indigo-900/20"
+                >
+                  <Bot size={16} /> ШІ
+                </button>
+                <button 
+                  onClick={handleSaveToGrimoire} 
+                  disabled={(activeSpell.patterns || []).length === 0}
+                  className="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50 shadow-lg shadow-purple-900/20 flex items-center gap-2"
+                >
+                  <Bookmark size={16} /> Зберегти
+                </button>
+              </div>
             </div>
-          )}
-
-          <div className="flex-1 relative p-4 flex items-center justify-center overflow-hidden bg-slate-950">
-            <div className="absolute top-6 right-6 z-10 flex flex-col gap-3">
-              <button onClick={handleZoomIn} disabled={zoom >= 300} className="w-10 h-10 bg-slate-800/90 backdrop-blur border border-slate-700 rounded-full flex items-center justify-center text-slate-300 hover:bg-purple-600 hover:text-white shadow-lg active:scale-95 transition-all disabled:opacity-50"><Plus size={20} /></button>
-              <div className="text-center text-xs font-mono text-slate-400 bg-slate-900/50 rounded-full py-1">{zoom}%</div>
-              <button onClick={handleZoomOut} disabled={zoom <= 50} className="w-10 h-10 bg-slate-800/90 backdrop-blur border border-slate-700 rounded-full flex items-center justify-center text-slate-300 hover:bg-slate-700 hover:text-white shadow-lg active:scale-95 transition-all disabled:opacity-50"><Minus size={20} /></button>
-            </div>
-            <div className="w-full h-full max-w-[800px] aspect-square relative touch-none">
-              <HexCanvas paths={draftPaths} currentPath={currentDraftPath} onChange={handlePathChange} onPathComplete={handlePathComplete} zoom={zoom} />
-            </div>
-          </div>
-          
-          <div className="shrink-0 bg-slate-900 border-t border-slate-800 p-3 md:p-4 flex flex-wrap gap-2 md:gap-4 justify-center items-center">
-            <button onClick={handleUndo} disabled={currentDraftPath.length === 0 && draftPaths.length === 0 && draftHistory.length === 0} className="flex-1 md:flex-none flex items-center justify-center gap-1 md:gap-2 py-2 px-3 md:px-4 rounded-xl text-sm md:text-base font-medium transition-all bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-50">
-              <Undo size={16} className="md:w-[18px] md:h-[18px]" /> Відкотити
-            </button>
-            <button onClick={handleClearCanvas} disabled={currentDraftPath.length === 0 && draftPaths.length === 0} className="flex-1 md:flex-none flex items-center justify-center gap-1 md:gap-2 py-2 px-3 md:px-4 rounded-xl text-sm md:text-base font-medium transition-all bg-slate-800 hover:bg-slate-700 text-red-400 disabled:opacity-50">
-              <Trash2 size={16} className="md:w-[18px] md:h-[18px]" /> Очистити
-            </button>
-            <button onClick={handleAddGlyph} disabled={currentDraftPath.length === 0 && draftPaths.length === 0} className="w-full md:w-auto flex items-center justify-center gap-2 py-2 px-6 rounded-xl text-sm md:text-base font-bold transition-all bg-purple-600 hover:bg-purple-500 text-white disabled:opacity-50 shadow-[0_0_15px_rgba(168,85,247,0.4)]">
-              <Plus size={18} /> {isMultiMode ? 'Додати гліфи' : 'Додати гліф'}
-            </button>
           </div>
         </div>
 
-        {/* Права панель - Деталі закляття */}
-        <div className="w-full md:w-[400px] lg:w-[500px] flex flex-col bg-slate-900 overflow-y-auto custom-scrollbar">
-          <div className="p-6 space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="font-bold text-xl text-purple-300">Поточне закляття</h2>
-              <div className="flex gap-2">
-                <button onClick={() => fileInputRef.current?.click()} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors" title="Імпортувати">
-                  <Upload size={18} />
+        {/* Drawing Area */}
+        <div className="shrink-0 flex flex-col border-b border-slate-800 bg-slate-950">
+          <div className="p-2 md:p-3 bg-slate-900/50 border-b border-slate-800 flex justify-between items-center shrink-0 z-20">
+            <div className="flex items-center gap-2">
+              <h2 className="font-bold text-[10px] md:text-xs text-slate-500 uppercase tracking-widest hidden xs:block">Малювання</h2>
+              <div className="flex bg-slate-950 rounded-lg p-0.5 border border-slate-800">
+                <button 
+                  onClick={() => setIsMultiMode(false)} 
+                  className={`px-2 py-1 rounded-md text-[9px] md:text-xs font-bold transition-all ${!isMultiMode ? 'bg-purple-600 text-white' : 'text-slate-500'}`}
+                >
+                  Один
                 </button>
-                <button onClick={() => handleDownloadSpell(activeSpell)} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors" title="Експортувати">
-                  <Download size={18} />
-                </button>
-                <button onClick={handleShareSpell} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors" title="Поділитися посиланням">
-                  <Share2 size={18} />
+                <button 
+                  onClick={() => setIsMultiMode(true)} 
+                  className={`px-2 py-1 rounded-md text-[9px] md:text-xs font-bold transition-all ${isMultiMode ? 'bg-purple-600 text-white' : 'text-slate-500'}`}
+                >
+                  Багато
                 </button>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-purple-400 mb-1.5 uppercase tracking-wider">Назва</label>
-                <input type="text" value={activeSpell.name} onChange={(e) => setActiveSpell({ ...activeSpell, name: e.target.value })} placeholder="Введіть назву..." className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-lg font-bold text-white outline-none focus:border-purple-500 transition-colors" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-purple-400 mb-1.5 uppercase tracking-wider">Опис</label>
-                <textarea value={activeSpell.description} onChange={(e) => setActiveSpell({ ...activeSpell, description: e.target.value })} placeholder="Що робить закляття?" className="w-full h-24 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-300 outline-none focus:border-purple-500 resize-y transition-colors" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-purple-400 mb-1.5 uppercase tracking-wider">URL зображення</label>
-                <input type="text" value={activeSpell.imageUrl || ''} onChange={(e) => setActiveSpell({ ...activeSpell, imageUrl: e.target.value })} placeholder="https://..." className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-purple-500 transition-colors" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-purple-400 mb-1.5 uppercase tracking-wider">URL відео (YouTube)</label>
-                <input type="text" value={activeSpell.videoUrl || ''} onChange={(e) => setActiveSpell({ ...activeSpell, videoUrl: e.target.value })} placeholder="https://youtube.com/..." className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-purple-500 transition-colors" />
+            <div className="flex items-center gap-1.5">
+              <button 
+                onClick={handleZoomOut} 
+                className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-all border border-slate-700"
+                title="Зменшити"
+              >
+                <Minus size={14} />
+              </button>
+              <button 
+                onClick={handleZoomIn} 
+                className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-all border border-slate-700"
+                title="Збільшити"
+              >
+                <Plus size={14} />
+              </button>
+              <div className="h-5 w-px bg-slate-800 mx-0.5"></div>
+              <button 
+                onClick={handleUndo} 
+                disabled={currentDraftPath.length === 0 && draftPaths.length === 0 && draftHistory.length === 0}
+                className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-all disabled:opacity-30 border border-slate-700"
+                title="Відкотити"
+              >
+                <Undo size={14} />
+              </button>
+              <button 
+                onClick={handleClearCanvas} 
+                disabled={currentDraftPath.length === 0 && draftPaths.length === 0}
+                className="p-1.5 bg-slate-800 hover:bg-red-900/20 text-red-400/70 rounded-lg transition-all disabled:opacity-30 border border-slate-700"
+                title="Очистити"
+              >
+                <Trash2 size={14} />
+              </button>
+              <div className="h-5 w-px bg-slate-800 mx-0.5"></div>
+              <button 
+                onClick={handleAddGlyph} 
+                disabled={currentDraftPath.length === 0 && draftPaths.length === 0}
+                className="flex items-center justify-center gap-1.5 px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 shadow-lg shadow-purple-900/20"
+              >
+                <Plus size={16} /> Додати гліф
+              </button>
+            </div>
+          </div>
+          
+          <div className="relative flex items-center justify-center overflow-hidden bg-slate-950 h-[60vh] md:h-[80vh]">
+            {/* Canvas Container - Responsive height */}
+            <div className="w-full h-full max-h-full flex items-center justify-center p-2">
+              <div className="w-full h-full max-w-full max-h-full relative touch-none">
+                <HexCanvas paths={draftPaths} currentPath={currentDraftPath} onChange={handlePathChange} onPathComplete={handlePathComplete} zoom={zoom} />
               </div>
             </div>
+          </div>
+        </div>
 
-            <div>
-               <label className="text-xs font-bold text-purple-400 mb-3 uppercase tracking-wider block">Гліфи ({(activeSpell.patterns || []).length})</label>
-               <div className="grid grid-cols-1 gap-3">
-                  {(activeSpell.patterns || []).length === 0 && (
-                    <div className="text-center py-8 text-slate-500 bg-slate-950/50 rounded-xl border border-slate-800 border-dashed">
-                      Намалюйте гліф та натисніть "Додати гліф"
-                    </div>
-                  )}
-                  {(activeSpell.patterns || []).map((p: any, i: number) => (
-                    <div key={p.id} className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
-                      <div className="flex flex-col gap-1 shrink-0">
-                        <button onClick={() => handleMovePattern(i, -1)} disabled={i === 0} className="p-1 text-slate-500 hover:text-purple-400 disabled:opacity-20 transition-colors bg-slate-900 rounded"><ArrowUp size={14} /></button>
-                        <button onClick={() => handleMovePattern(i, 1)} disabled={i === activeSpell.patterns.length - 1} className="p-1 text-slate-500 hover:text-purple-400 disabled:opacity-20 transition-colors bg-slate-900 rounded"><ArrowDown size={14} /></button>
-                      </div>
-                      <div className="w-12 h-12 bg-slate-900 rounded border border-slate-800 shrink-0 p-1"><HexMiniature path={p.path} /></div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-slate-500 block">Гліф #{i + 1}</span>
-                          <span className="text-[10px] font-mono text-purple-400/60 bg-slate-900 px-1.5 py-0.5 rounded tracking-widest truncate max-w-[100px] ml-2" title={pathToHexAngles(p.path).angles}>
-                            {pathToHexAngles(p.path).angles || 'пряма'}
-                          </span>
+        {/* Bottom Section: Glyph List - Part of the scrollable area */}
+        <div className="shrink-0 bg-slate-900 border-t border-slate-800 p-4 md:p-6">
+          <div className="w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-xs md:text-sm text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                <Book size={16} className="text-purple-500" />
+                Список гліфів ({(activeSpell.patterns || []).length})
+              </h3>
+            </div>
+            
+            {(activeSpell.patterns || []).length === 0 ? (
+              <div className="py-8 text-center border-2 border-dashed border-slate-800 rounded-xl">
+                <p className="text-slate-600 text-xs md:text-sm italic">Намалюйте та додайте свій перший гліф</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {(activeSpell.patterns || []).map((p: any, i: number) => {
+                  const { angles } = pathToHexAngles(p.path);
+                  const isVerified = angles ? HEX_DICTIONARY.some(dp => dp.patterns.includes(angles)) : false;
+                  
+                  return (
+                    <div key={p.id} className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex gap-3 items-center group shadow-lg relative">
+                      {isVerified && (
+                        <div className="absolute -top-1.5 -right-1.5 bg-yellow-500 text-slate-950 p-0.5 rounded-full shadow-lg z-10" title="Перевірений гліф">
+                          <Sparkles size={10} fill="currentColor" />
                         </div>
-                        <input type="text" value={p.name} onChange={(e) => handleUpdatePatternName(p.id, e.target.value)} placeholder="Назва патерну" className="w-full bg-transparent border-b border-slate-800 py-1 text-sm text-slate-200 outline-none focus:border-purple-500 truncate" />
+                      )}
+                      <div className="w-12 h-12 bg-slate-900 rounded-lg border border-slate-800 p-1 shrink-0">
+                        <HexMiniature path={p.path} fade={true} />
                       </div>
-                      <div className="flex flex-col gap-1 shrink-0">
-                        <button 
-                          onClick={() => handleSaveTemplate(p.path, p.id)} 
-                          className={`p-1.5 rounded-lg transition-colors ${savedTemplates[p.id] ? 'text-green-400 bg-green-900/20' : 'text-slate-500 hover:text-yellow-400 hover:bg-slate-900'}`} 
-                          title={savedTemplates[p.id] ? "Збережено!" : "Зберегти як шаблон пози"}
-                        >
-                          {savedTemplates[p.id] ? <Check size={16} /> : <Bookmark size={16} />}
-                        </button>
-                        <button onClick={() => handleRotatePattern(p.id)} className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-slate-900 rounded-lg transition-colors" title="Повернути">
-                          <RotateCw size={16} />
-                        </button>
-                        <button onClick={() => handleRemovePattern(p.id)} className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-900 rounded-lg transition-colors" title="Видалити">
-                          <XCircle size={16} />
-                        </button>
+                      <div className="flex-1 min-w-0">
+                        <input 
+                          type="text" 
+                          value={p.name} 
+                          onChange={(e) => handleUpdatePatternName(p.id, e.target.value)}
+                          placeholder="Назва..."
+                          className="w-full bg-transparent text-sm font-bold text-slate-200 outline-none border-b border-transparent focus:border-purple-500 transition-all"
+                        />
+                        <div className="text-[10px] font-mono text-purple-400/70 mt-0.5 truncate" title={angles || 'Початковий вузол'}>
+                          {angles || 'Початковий вузол'}
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => handleRotatePattern(p.id)} className="p-1 text-slate-500 hover:text-indigo-400 transition-colors"><RotateCw size={14} /></button>
+                        <button onClick={() => handleRemovePattern(p.id)} className="p-1 text-slate-500 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
                       </div>
                     </div>
-                  ))}
-               </div>
-            </div>
-
-            <button onClick={handleSaveToGrimoire} className="w-full flex justify-center items-center gap-2 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all active:scale-95">
-              <Check size={20} /> Зберегти до Гримуару
-            </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Alert Modal */}
+      {alertMessage && (
+        <div className="fixed inset-0 z-[70] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center">
+            <p className="text-slate-200 mb-6">{alertMessage}</p>
+            <button 
+              onClick={() => setAlertMessage(null)}
+              className="w-full py-2 bg-indigo-600 hover:bg-indigo-50 text-white rounded-xl font-bold transition-all"
+            >
+              Зрозуміло
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal for New Spell */}
+      {showConfirmNew && (
+        <div className="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-2">Почати нове закляття?</h3>
+            <p className="text-sm text-slate-400 mb-6">
+              Ви впевнені? Поточне закляття буде втрачено, якщо воно не збережене в Гримуар.
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setShowConfirmNew(false)}
+                className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-medium transition-all"
+              >
+                Скасувати
+              </button>
+              <button 
+                onClick={confirmStartNew}
+                className="flex-1 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-red-900/20"
+              >
+                Так, нове
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* AI Modal */}
       {showAiModal && (
@@ -552,14 +723,33 @@ export default function Creator() {
                   className="w-full h-24 bg-slate-950 border border-slate-700 rounded-xl p-3 text-slate-200 outline-none focus:border-indigo-500 resize-none mb-3"
                 />
                 
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button 
                     onClick={() => {
-                      const prompt = `Я граю в гру з магічною системою на гексагональній сітці (Hex Casting). Руни малюються послідовними відрізками. Літери керують напрямком відносно попереднього кроку: w (прямо), e (праворуч 60°), d (праворуч 120°), s (назад), a (ліворуч 120°), q (ліворуч 60°). Стартовий напрямок - Схід.\n\nНапиши закляття для: ${aiIntention || '[ваша ідея]'}\n\nОБОВ'ЯЗКОВО використай пошук в інтернеті, щоб знайти правильні патерни (наприклад, Mind's Reflection, Archer's Distillation, Ignite) та їхні точні послідовності кутів (angles).\n\nТвоя кінцева відповідь має містити ТІЛЬКИ послідовність рун, розділених комою або пробілом. Використовуй лише літери q, w, e, a, s, d. Ніяких інших слів, пояснень чи форматувань.\n\nПриклад ідеальної відповіді: qaq, aa, qaq, wa, weaqa, aaqawawa`;
+                      const prompt = `Універсальний системний промпт для Hex Casting
+Ти — експерт-заклинач у моді Hex Casting для Minecraft. Твоє завдання — генерувати максимально оптимізовані, робочі та елегантні закляття на основі запитів користувача.
+
+ЗАПИТ КОРИСТУВАЧА: Напиши закляття для: ${aiIntention || '[ваша ідея]'}
+
+ПРАВИЛА НАПИСАННЯ ЗАКЛЯТЬ (ОБОВ'ЯЗКОВО ДО ВИКОНАННЯ):
+1. Математична оптимізація: НІКОЛИ не застосовуй багаторазове додавання векторів (наприклад, waaw кілька разів підряд) для обчислення дистанції чи висоти. ЗАВЖДИ використовуй множення (Multiplicative Distillation).
+Приклад: Щоб отримати висоту 5 блоків, створи одиничний вектор Y (qqqqqew), напиши число 5 (aqaaq) та перемнож їх (waqaw), після чого додай до стартової координати.
+
+2. Фізика гри (Гравітаційні блоки): Будь-який блок, що має падати (ковадло, сталактит, пісок тощо), не може бути розміщений просто в повітрі. Для таких атак завжди дій за таким алгоритмом:
+- Знайди координату цілі.
+- Створи примарний блок-опору (qqa) на 1 блок вище за точку появи гравітаційного блоку.
+- Встанови сам атакуючий/гравітаційний блок (eeeeede) безпосередньо під цією опорою.
+- Зламай примарний блок-опору (qaqqqqq), щоб запустити падіння гравітаційного блоку на ціль.
+
+3. Оптимізація стека: Якщо потрібно виконати кілька дій навколо однієї координати цілі, обов'язково дублюй її за допомогою Gemini Decomposition (aadaa). Використовуй маніпуляції зі стеком, наприклад Jester's Gambit (aawdd), щоб правильно розмістити вектори та цілі перед застосуванням гліфів дії.
+
+ОБОВ'ЯЗКОВО використай пошук в інтернеті, щоб знайти правильні патерни (наприклад, Mind's Reflection, Archer's Distillation, Ignite) та їхні точні послідовності кутів (angles), якщо ти їх не знаєш.
+
+ФОРМАТ ВІДПОВІДІ: Відповідай ВИКЛЮЧНО послідовністю патернів (літер), розділених комами і пробілами. Жодних пояснень, привітань, вступних слів чи коментарів. Лише чистий код закляття.`;
                       navigator.clipboard.writeText(prompt);
-                      alert('Промпт скопійовано! Ви можете вставити його у свій чат з ШІ.');
+                      setAlertMessage('Промпт скопійовано! Ви можете вставити його у свій чат з ШІ.');
                     }}
-                    className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-medium transition-all flex items-center justify-center gap-2 text-sm"
+                    className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-medium transition-all flex items-center justify-center gap-2 text-xs"
                   >
                     <Copy size={16} /> Копіювати промпт
                   </button>
@@ -573,6 +763,21 @@ export default function Creator() {
                     ) : (
                       <><Bot size={18} /> Згенерувати</>
                     )}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <button 
+                    onClick={handleDownloadDictionary}
+                    className="py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-medium transition-all flex items-center justify-center gap-2 text-[10px]"
+                  >
+                    <FileJson size={14} /> Скачати словник (JSON)
+                  </button>
+                  <button 
+                    onClick={handleCopyNotebookLMPrompt}
+                    className="py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-medium transition-all flex items-center justify-center gap-2 text-[10px]"
+                  >
+                    <Copy size={14} /> Промпт для NotebookLM
                   </button>
                 </div>
               </div>

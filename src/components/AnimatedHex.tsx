@@ -33,7 +33,7 @@ export const AnimatedHex: React.FC<{ path?: string[], className?: string }> = ({
     ? `${minX - padding} ${minY - padding} ${maxX - minX + padding * 2} ${maxY - minY + padding * 2}`
     : `0 0 ${VIEWBOX_SIZE} ${VIEWBOX_SIZE}`;
 
-  const strokeWidth = Math.max(4, (maxX - minX) / 15);
+  const strokeWidth = Math.max(2, (maxX - minX) / 30);
 
   return (
     <svg viewBox={vBox} className={`w-full h-full ${className}`}>
@@ -83,12 +83,12 @@ export const AnimatedHex: React.FC<{ path?: string[], className?: string }> = ({
               />
             );
           })}
-          <circle cx={pathNodes[0].x} cy={pathNodes[0].y} r={strokeWidth * 1.5} className="fill-white drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
+          <circle cx={pathNodes[0].x} cy={pathNodes[0].y} r={strokeWidth * 1.2} className="fill-white drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
           {pathNodes.length > 1 && (
             <circle 
               cx={pathNodes[pathNodes.length - 1].x} 
               cy={pathNodes[pathNodes.length - 1].y} 
-              r={strokeWidth * 1.5} 
+              r={strokeWidth * 1.2} 
               className="fill-fuchsia-300 drop-shadow-[0_0_12px_rgba(217,70,239,1)]" 
               style={{ opacity: 0, animation: 'fadeIn 0.2s ease-in forwards 1.4s' }}
             />

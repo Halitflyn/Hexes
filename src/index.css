@@ -1,1 +1,65 @@
 @import "tailwindcss";
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #7c3aed #0f172a;
+  }
+
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: #0f172a; /* slate-900 */
+    border-radius: 10px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: #7c3aed; /* purple-600 */
+    border-radius: 10px;
+    border: 1px solid #0f172a;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: #8b5cf6; /* purple-500 */
+  }
+}
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #0f172a; /* slate-900 */
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #7c3aed; /* purple-600 */
+    border-radius: 10px;
+    border: 1px solid #0f172a;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #8b5cf6; /* purple-500 */
+  }
+
+  /* Firefox support */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #7c3aed #0f172a;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

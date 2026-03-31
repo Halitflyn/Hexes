@@ -1,6 +1,6 @@
-export const VIEWBOX_SIZE = 800; 
-export const HEX_SIZE = 24; 
-export const GRID_RADIUS = 25; 
+export const VIEWBOX_SIZE = 2000; 
+export const HEX_SIZE = 32; 
+export const GRID_RADIUS = 40; 
 
 export const getNodeCoords = (q: number, r: number) => {
   return {
