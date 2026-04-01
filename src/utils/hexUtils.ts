@@ -148,3 +148,87 @@ export const generateId = () => {
   }
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
 };
+
+export const findAllValidPatterns = (basePattern: string, startDir: number = 0) => {
+  const path = parseHexAngles(basePattern, startDir);
+  if (path.length < 2) return [];
+
+  // Extract all edges
+  const edges = new Set<string>();
+  const nodes = new Set<string>();
+  
+  for (let i = 0; i < path.length - 1; i++) {
+    const a = path[i];
+    const b = path[i+1];
+    nodes.add(a);
+    nodes.add(b);
+    const edge = [a, b].sort().join('|');
+    edges.add(edge);
+  }
+
+  const totalEdges = edges.size;
+  const results: { path: string[], angles: string, startDir: number }[] = [];
+  
+  // Always include the original path as the first result
+  const originalAngles = pathToHexAngles(path);
+  if (originalAngles.angles !== "" || path.length === 2) {
+    results.push({ path: [...path], angles: originalAngles.angles, startDir: originalAngles.startDir });
+  }
+  
+  // Build adjacency list for faster DFS
+  const adj: Record<string, string[]> = {};
+  nodes.forEach(n => adj[n] = []);
+  edges.forEach(e => {
+    const [a, b] = e.split('|');
+    adj[a].push(b);
+    adj[b].push(a);
+  });
+
+  let iterations = 0;
+  const MAX_ITERATIONS = 50000; // Prevent browser freeze
+  const MAX_RESULTS = 50;
+
+  const dfs = (currentNode: string, visitedEdges: Set<string>, currentPath: string[]) => {
+    if (results.length >= MAX_RESULTS || iterations > MAX_ITERATIONS) return;
+    iterations++;
+
+    if (visitedEdges.size === totalEdges) {
+      const { angles, startDir } = pathToHexAngles(currentPath);
+      // Only add if we successfully parsed it
+      if (angles !== "" || currentPath.length === 2) {
+        results.push({ path: [...currentPath], angles, startDir });
+      }
+      return;
+    }
+
+    for (const neighbor of adj[currentNode]) {
+      const edge = [currentNode, neighbor].sort().join('|');
+      if (!visitedEdges.has(edge)) {
+        visitedEdges.add(edge);
+        currentPath.push(neighbor);
+        dfs(neighbor, visitedEdges, currentPath);
+        currentPath.pop();
+        visitedEdges.delete(edge);
+      }
+    }
+  };
+
+  // Start DFS from every node
+  for (const startNode of nodes) {
+    if (results.length >= MAX_RESULTS || iterations > MAX_ITERATIONS) break;
+    dfs(startNode, new Set<string>(), [startNode]);
+  }
+
+  // Deduplicate by angles + startDir (just in case, though they should be unique paths)
+  const uniqueResults = [];
+  const seen = new Set<string>();
+  for (const res of results) {
+    const key = `${res.angles}-${res.startDir}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniqueResults.push(res);
+    }
+  }
+
+  return uniqueResults;
+};

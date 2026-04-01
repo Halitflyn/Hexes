@@ -83,9 +83,10 @@
     "name": "Numerical Reflection",
     "type": "→ number",
     "patterns": [
-      "aqaa"
+      "aqaa",
+      "dedd"
     ],
-    "description": "0; wa -<+1*2=2>; wq -<+1+5=6>; ww -<+1+1=2>; we -<+1+10=11>; wd -<+1/2=0.5>"
+    "description": "Числа створюються за допомогою базового патерну aqaa (для додатних) або dedd (для від'ємних), до якого додаються суфікси: w (+1), q (+5), e (+10), a (*2), d (/2)."
   },
   {
     "name": "Additive Distillation",
@@ -226,20 +227,29 @@
   {
     "name": "Vector Rfln. +X/-X",
     "type": "→ vector",
-    "patterns": [],
-    "description": "qqqqqea /<eeeeeqa>"
+    "patterns": [
+      "qqqqqea",
+      "eeeeeqa"
+    ],
+    "description": "Опис відсутній"
   },
   {
     "name": "Vector Rfln. +Y/-Y",
     "type": "→ vector",
-    "patterns": [],
-    "description": "qqqqqew /<eeeeeqw>"
+    "patterns": [
+      "qqqqqew",
+      "eeeeeqw"
+    ],
+    "description": "Опис відсутній"
   },
   {
     "name": "Vector Rfln. +Z/-Z",
     "type": "→ vector",
-    "patterns": [],
-    "description": "qqqqqed /<eeeeeqa>"
+    "patterns": [
+      "qqqqqed",
+      "eeeeeqa"
+    ],
+    "description": "Опис відсутній"
   },
   {
     "name": "Circle's Reflection",
@@ -364,8 +374,12 @@
   {
     "name": "Bookkeeper's Gambit",
     "type": "many → many",
-    "patterns": [],
-    "description": "aeea /<eada>/<ae>"
+    "patterns": [
+      "aeea",
+      "eada",
+      "ae"
+    ],
+    "description": "Опис відсутній"
   },
   {
     "name": "Swindler's Gambit",
@@ -612,6 +626,710 @@
     "type": "vector, number → list",
     "patterns": [
       "qqqqqwded"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Selection Distillation",
+    "type": "list, number → any",
+    "patterns": [
+      "deeed"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Selection Exaltation",
+    "type": "list, num, num → list",
+    "patterns": [
+      "qaeaqwded"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Integration Distillation",
+    "type": "list, any → list",
+    "patterns": [
+      "edqde"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Derivation Decomposition",
+    "type": "list → list, any",
+    "patterns": [
+      "qaeaq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Additive Distillation",
+    "type": "list, list → list",
+    "patterns": [
+      "waaw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Vacant Reflection",
+    "type": "→ list",
+    "patterns": [
+      "qqaeaae"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Single's Purification",
+    "type": "any → list",
+    "patterns": [
+      "adeeed"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Length Purification",
+    "type": "list → num",
+    "patterns": [
+      "wqaqw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Retrograde Purification",
+    "type": "list → list",
+    "patterns": [
+      "qqqaede"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Locator's Distillation",
+    "type": "list, any → num",
+    "patterns": [
+      "dedqde"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Excisor's Distillation",
+    "type": "list, num → list",
+    "patterns": [
+      "edqdewaqa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Surgeon's Exaltation",
+    "type": "list, num, any → list",
+    "patterns": [
+      "wqaeaqw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Flock's Gambit",
+    "type": "many, num → list",
+    "patterns": [
+      "ewdqdwe"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Flock's Disintegration",
+    "type": "list → many",
+    "patterns": [
+      "qwaeawq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Speaker's Distillation",
+    "type": "list, any → list",
+    "patterns": [
+      "ddewedd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Speaker's Decomposition",
+    "type": "list → list, any",
+    "patterns": [
+      "aaqwqaa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Consideration",
+    "type": "list → list, any",
+    "patterns": [
+      "qqqaw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Introspection",
+    "type": "list → list, any",
+    "patterns": [
+      "qqq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Retrospection",
+    "type": "list → list, any",
+    "patterns": [
+      "eee"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Evanition",
+    "type": "list → list, any",
+    "patterns": [
+      "eeedw"
+    ],
+    "description": "Опис відсутній"
+  }, 
+  {
+    "name": "Scribe's Reflection",
+    "type": "→ any",
+    "patterns": [
+      "aqqqqq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Scribe's Gambit",
+    "type": "any →",
+    "patterns": [
+      "deeeee"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Chronicler's Prfn.",
+    "type": "entity → any",
+    "patterns": [
+      "wawqwqwqwqwqw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Chronicler's Gambit",
+    "type": "entity, any →",
+    "patterns": [
+      "wdwewewewewew"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Auditor's Reflection",
+    "type": "→ bool",
+    "patterns": [
+      "aqqqqqe"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Auditor's Purification",
+    "type": "entity → bool",
+    "patterns": [
+      "wawqwqwqwqwqwew"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Assessor's Reflection",
+    "type": "→ bool",
+    "patterns": [
+      "deeeeeq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Assessor's Purification",
+    "type": "entity → bool",
+    "patterns": [
+      "wdwewewewewewqw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Huginn's Gambit",
+    "type": "any →",
+    "patterns": [
+      "eqqwawqaaw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Muninn's Reflection",
+    "type": "→ any",
+    "patterns": [
+      "qeewdweddw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Sine Purification",
+    "type": "num → num",
+    "patterns": [
+      "qqqqqaa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Cosine Purification",
+    "type": "num → num",
+    "patterns": [
+      "qqqqqad"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Tangent Purification",
+    "type": "num → num",
+    "patterns": [
+      "wqqqqqadq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Inverse Sine Prfn.",
+    "type": "num → num",
+    "patterns": [
+      "ddeeeee"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Inverse Cosine Prfn.",
+    "type": "num → num",
+    "patterns": [
+      "adeeeee"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Inverse Tangent Prfn.",
+    "type": "num → num",
+    "patterns": [
+      "eadeeeeew"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Inverse Tangent Dstl.",
+    "type": "num, num → num",
+    "patterns": [
+      "deadeeeeewd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Logarithmic Distillation",
+    "type": "num, num → num",
+    "patterns": [
+      "wedew"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Disjunction Distillation",
+    "type": "(num, num",
+    "patterns": [
+      "waw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Conjunction Distillation",
+    "type": "(num, num",
+    "patterns": [
+      "wdw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Exclusion Distillation",
+    "type": "(num, num",
+    "patterns": [
+      "dwa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Negation Purification",
+    "type": "num → num",
+    "patterns": [
+      "dw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Uniqueness Purification",
+    "type": "list → list",
+    "patterns": [
+      "aweaqa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Hermes' Gambit",
+    "type": "[pattern] | pattern → many",
+    "patterns": [
+      "deaqq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Iris' Gambit",
+    "type": "[pattern] | pattern → many",
+    "patterns": [
+      "qwaqde"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Thoth's Gambit",
+    "type": "list of patterns, list → list",
+    "patterns": [
+      "dadad"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Charon's Gambit",
+    "type": "",
+    "patterns": [
+      "aqdee"
+    ],
+    "description": "Опис відсутній"
+  },  
+  {
+    "name": "Thanatos' Reflection",
+    "type": "→ number",
+    "patterns": [
+      "qqaed"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Waystone Reflection",
+    "type": "→ vector",
+    "patterns": [
+      "eaqwqae"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Lodestone Reflection",
+    "type": "→ vector",
+    "patterns": [
+      "eaqwqaewede"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Lesser Fold Reflection",
+    "type": "→ vector",
+    "patterns": [
+      "eaqwqaewdd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Greater Fold Reflection",
+    "type": "→ vector",
+    "patterns": [
+      "aqwqawaaqa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Akasha's Distillation",
+    "type": "vector, pattern → any",
+    "patterns": [
+      "qqqwqqqqqaq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Akasha's Gambit",
+    "type": "vector, pattern, any →",
+    "patterns": [
+      "eeeweeeeede"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Explosion",
+    "type": "vector, number →",
+    "patterns": [
+      "aawaawaa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Fireball",
+    "type": "vector, number →",
+    "patterns": [
+      "ddwddwdd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Impulse",
+    "type": "entity, vector →",
+    "patterns": [
+      "awqqqwaqw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Blink",
+    "type": "entity, number →",
+    "patterns": [
+      "awqqqwaq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Make Note",
+    "type": "vector, number, number →",
+    "patterns": [
+      "adaa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Place Block",
+    "type": "vector →",
+    "patterns": [
+      "eeeeede"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Break Block",
+    "type": "vector →",
+    "patterns": [
+      "qaqqqqq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Create Water",
+    "type": "vector →",
+    "patterns": [
+      "aqawqadaq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Destroy Liquid",
+    "type": "vector →",
+    "patterns": [
+      "dedwedade"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Conjure Block",
+    "type": "vector →",
+    "patterns": [
+      "qqa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Conjure Light",
+    "type": "vector →",
+    "patterns": [
+      "qqd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Overgrow",
+    "type": "vector →",
+    "patterns": [
+      "wqaqwawqaqw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Edify Sapling",
+    "type": "vector →",
+    "patterns": [
+      "wqaqwd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Ignite",
+    "type": "entity | vector →",
+    "patterns": [
+      "aaqawawa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Extinguish Area",
+    "type": "vector →",
+    "patterns": [
+      "ddedwdwd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "White Sun's Nadir",
+    "type": "entity, number, number →",
+    "patterns": [
+      "qqqqqaqwawaw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Blue Sun's Nadir",
+    "type": "entity, number →",
+    "patterns": [
+      "qqqqqawwawawd"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Black Sun's Nadir",
+    "type": "entity, number, number →",
+    "patterns": [
+      "qqqqqaewawawe"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Red Sun's Nadir",
+    "type": "entity, number, number →",
+    "patterns": [
+      "qqqqqadwawaww"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Green Sun's Nadir",
+    "type": "entity, number, number →",
+    "patterns": [
+      "qqqqqadwawaw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Craft Cypher",
+    "type": "entity, [pattern] →",
+    "patterns": [
+      "waqqqqq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Craft Trinket",
+    "type": "entity, [pattern] →",
+    "patterns": [
+      "wwaqqqqqeaqeaeqqqeaeq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Craft Artifact",
+    "type": "entity, [pattern] →",
+    "patterns": [
+      "wwaqqqqqeawqwqwqwqwqwwqqeadaeqqeqqeadaeqq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Recharge Item",
+    "type": "entity →",
+    "patterns": [
+      "qqqqqwaeaeaeaeaea"
+    ],
+    "description": "Опис відсутній"
+  },
+    {
+    "name": "Erase Item",
+    "type": "",
+    "patterns": [
+      "qdqawwaww"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Summon Sentinel",
+    "type": "vector →",
+    "patterns": [
+      "waeawae"
+    ],
+    "description": "Опис відсутній"
+  },
+    {
+    "name": "Banish Sentinel",
+    "type": "",
+    "patterns": [
+      "qdwdqdw"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Locate Sentinel",
+    "type": "→ vector",
+    "patterns": [
+      "waeawaede"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Wayfind Sentinel",
+    "type": "vector → vector",
+    "patterns": [
+      "waeawaedwa"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Internalize Pigment",
+    "type": "vector → vector",
+    "patterns": [
+      "awddwqawqwawq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Caster's Glamour",
+    "type": "vector → vector",
+    "patterns": [
+      "dwaawedwewdwe"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Anchorite's Flight",
+    "type": "entity, number →",
+    "patterns": [
+      "awawaawq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Wayfarer's Flight",
+    "type": "entity, number →",
+    "patterns": [
+      "dwdwdewq"
+    ],
+    "description": "Опис відсутній"
+  },
+  {
+    "name": "Aviator's Purification",
+    "type": "entity → boolean",
+    "patterns": [
+      "dwdwdeweaqa"
     ],
     "description": "Опис відсутній"
   }

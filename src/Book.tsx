@@ -298,7 +298,12 @@ export default function BookView() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="text-sm text-slate-500 mb-1">Гліф #{i + 1}</div>
-                          <div className="font-bold text-slate-200 mb-2 truncate">{p.name || 'Без назви'}</div>
+                          <div className="font-bold text-slate-200 mb-1 truncate">{p.name || 'Без назви'}</div>
+                          {p.description && (
+                            <div className="text-xs text-slate-400 mb-2 line-clamp-2" title={p.description}>
+                              {p.description}
+                            </div>
+                          )}
                           <div className="text-xs font-mono text-purple-400 bg-purple-900/20 px-2 py-1 rounded inline-block break-all">
                             {angles || 'Початковий вузол'}
                           </div>

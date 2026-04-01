@@ -1,0 +1,114 @@
+[
+  {
+    "name": "Create Lava",
+    "type": "vector →",
+    "patterns": [
+      "ewaqwawqawe"
+    ],
+    "description": "Summon a block of lava (or insert up to a bucket's worth) into a block at the given position. Costs about one Charged Amethyst. It may be advisable to keep my knowledge of this spell secret. A certain faction of botanists get... touchy about it, or so I've heard. Well, no one said tracing the deep secrets of the universe was going to be an easy time."
+  },
+  {
+    "name": "Summon Lightning",
+    "type": "vector →",
+    "patterns": [
+      "wddawdwaddwaewq"
+    ],
+    "description": "I command the heavens! This spell will summon a bolt of lightning to strike the earth where I direct it. Costs about three Amethyst Shards."
+  },
+  {
+    "name": "Summon Rain",
+    "type": "",
+    "patterns": [
+      "eewwweewdawdwaddwww"
+    ],
+    "description": "I control the clouds! This spell will summon rain across the world I cast it upon. Costs about one Charged Amethyst. Does nothing if it is already raining."
+  },
+  {
+    "name": "Dispel Rain",
+    "type": "",
+    "patterns": [
+      "qqqwwwqqqwwedwwddwaw"
+    ],
+    "description": "A counterpart to summoning rain. This spell will dispel rain across the world I cast it upon. Costs about one Amethyst Shard. Does nothing if the skies are already clear."
+  },
+  {
+    "name": "Altiora",
+    "type": "player →",
+    "patterns": [
+      "eawwaeawawaa"
+    ],
+    "description": "Summon a sheaf of media about me in the shape of wings, endowed with enough substance to allow gliding. Using them is identical to using Elytra; the target (which must be a player) is lofted into the air, after which pressing Jump will deploy the wings. The wings are fragile, and break upon touching any surface. Longer flights may benefit from Impulse or (for the foolhardy) Fireworks. Costs about one Charged Crystal."
+  },
+  {
+    "name": "Greater Teleport",
+    "type": "entity, vector →",
+    "patterns": [
+      "qqwwwqqeqqwwwqqqwwwaqqdqqqqqdqq"
+    ],
+    "description": "Far more powerful than Blink, this spell lets me teleport nearly anywhere in the entire world! There does seem to be a limit, but it is much greater than the normal radius of influence I am used to. The entity will be teleported by the given vector. Curiously, this vector seems to be an offset, not an absolute position in the world; for example, if I use Vector Reflection +X, the entity will end up precisely one block east of its original position. No matter the distance, it always seems to cost about ten Charged Amethyst. The transference is not perfect, and it seems when teleporting something as complex as a player, their inventory doesn't quite stay attached, and tends to splatter everywhere at the destination. In addition, the target will be forcibly removed from anything inanimate they are riding or sitting on ... but I've read scraps that suggest animals can come along for the ride, so to speak."
+  },
+  {
+    "name": "White Sun's Zenith",
+    "type": "entity, number, number →",
+    "patterns": [
+      "deawawaqeeeee"
+    ],
+    "description": "Bestows regeneration. Base cost is one Amethyst Dust per second."
+  },
+  {
+    "name": "Blue Sun's Zenith",
+    "type": "entity, number →",
+    "patterns": [
+      "dwqdwdwddeeee"
+    ],
+    "description": "Bestows night vision. Base cost is one Amethyst Dust per 5 seconds."
+  },
+  {
+    "name": "Black Sun's Zenith",
+    "type": "entity, number, number →",
+    "patterns": [
+      "awqeawawaaqqq"
+    ],
+    "description": "Bestows absorption. Base cost is one Amethyst Dust per second."
+  },
+  {
+    "name": "Red Sun's Zenith",
+    "type": "entity, number, number →",
+    "patterns": [
+      "aweawawaaqqqq"
+    ],
+    "description": "Bestows haste. Base cost is one Amethyst Dust per 3 seconds."
+  },
+  {
+    "name": "Green Sun's Zenith",
+    "type": "entity, number, number →",
+    "patterns": [
+      "adawawaaqqqqq"
+    ],
+    "description": "Bestows strength. Base cost is one Amethyst Dust per 3 seconds."
+  },
+  {
+    "name": "Summon Greater Sentinel",
+    "type": "vector →",
+    "patterns": [
+      "qwqqwqwqqqeawaeaw"
+    ],
+    "description": "Summon a greater version of my Sentinel. Costs about two Amethyst Dust. The stronger sentinel acts like the normal one I can summon without the use of a Great Spell, if a little more visually interesting. However, the range in which my spells can work is extended to a small region around my greater sentinel, about 16 blocks. In other words, no matter where in the world I am, I can interact with things around my sentinel (the mysterious forces of chunkloading notwithstanding)."
+  },
+  {
+    "name": "Craft Phial",
+    "type": "entity →",
+    "patterns": [
+      "wqwqwqwqwqwddeeedeqeewqaeaqweedww"
+    ],
+    "description": "Infuse a bottle with media to form a Phial. Similarly to the spells for Crafting Casting Items, I must hold a Glass Bottle in my other hand, and provide the spell with a dropped stack of Amethyst. See this page for more information. Costs about one Charged Amethyst."
+  },
+  {
+    "name": "Flay Mind",
+    "type": "entity, vector →",
+    "patterns": [
+      "wdeqewewewedqeqaqeqdedaeaqqde"
+    ],
+    "description": "I cannot make heads or tails of this spell... To be honest, I'm not sure I want to know what it does."
+  }
+]

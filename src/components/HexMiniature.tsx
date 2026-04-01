@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { getNodeCoords, VIEWBOX_SIZE } from '../utils/hexUtils';
 
-export const HexMiniature = ({ path = [], className = "", fade = false }: { path: string[], className?: string, fade?: boolean }) => {
+export const HexMiniature = ({ path = [], className = "", fade = false, animatedStep = -1 }: { path: string[], className?: string, fade?: boolean, animatedStep?: number }) => {
   const safePath = Array.isArray(path) ? path : [];
   
   const pathNodes = useMemo(() => {
@@ -25,16 +25,18 @@ export const HexMiniature = ({ path = [], className = "", fade = false }: { path
     : `0 0 ${VIEWBOX_SIZE} ${VIEWBOX_SIZE}`;
 
   const strokeWidth = Math.max(2, (maxX - minX) / 20);
+  
+  const visibleNodes = animatedStep >= 0 ? pathNodes.slice(0, animatedStep + 1) : pathNodes;
 
   return (
     <svg viewBox={vBox} className={`w-full h-full ${className}`}>
-      {pathNodes.length > 0 && (
+      {visibleNodes.length > 0 && (
         <>
           {fade ? (
-            pathNodes.map((node, i) => {
-              if (i === pathNodes.length - 1) return null;
-              const nextNode = pathNodes[i + 1];
-              const opacity = 1 - (i / (pathNodes.length - 1)) * 0.8; // Fades from 1 to 0.2
+            visibleNodes.map((node, i) => {
+              if (i === visibleNodes.length - 1) return null;
+              const nextNode = visibleNodes[i + 1];
+              const opacity = 1 - (i / (visibleNodes.length - 1)) * 0.8; // Fades from 1 to 0.2
               return (
                 <line
                   key={`line-${i}`}
@@ -51,7 +53,7 @@ export const HexMiniature = ({ path = [], className = "", fade = false }: { path
             })
           ) : (
             <polyline 
-              points={pathNodes.map(n => `${n.x},${n.y}`).join(' ')} 
+              points={visibleNodes.map(n => `${n.x},${n.y}`).join(' ')} 
               fill="none" 
               stroke="#c084fc" 
               strokeWidth={strokeWidth} 
@@ -59,7 +61,10 @@ export const HexMiniature = ({ path = [], className = "", fade = false }: { path
               strokeLinejoin="round" 
             />
           )}
-          <circle cx={pathNodes[0].x} cy={pathNodes[0].y} r={Math.max(2, (maxX - minX) / 40)} className="fill-white" />
+          <circle cx={visibleNodes[0].x} cy={visibleNodes[0].y} r={Math.max(3, (maxX - minX) / 30)} className="fill-green-400" stroke="#000" strokeWidth="1" />
+          {visibleNodes.length > 1 && (
+            <circle cx={visibleNodes[visibleNodes.length - 1].x} cy={visibleNodes[visibleNodes.length - 1].y} r={Math.max(3, (maxX - minX) / 30)} className="fill-red-400" stroke="#000" strokeWidth="1" />
+          )}
         </>
       )}
     </svg>

@@ -1,7 +1,8 @@
 import { HashRouter, Routes, Route, Link } from 'react-router-dom';
 import Creator from './Creator';
 import Book from './Book';
-import { Book as BookIcon, PenTool } from 'lucide-react';
+import GreatSpells from './GreatSpells';
+import { Book as BookIcon, PenTool, Sparkles } from 'lucide-react';
 
 export default function App() {
   return (
@@ -18,12 +19,17 @@ export default function App() {
             <PenTool size={14} />
             <span>Створювач</span>
           </Link>
+          <Link to="/great-spells" className="flex items-center gap-1.5 hover:text-purple-300 transition-colors text-xs font-medium">
+            <Sparkles size={14} />
+            <span>Великі Руни</span>
+          </Link>
         </nav>
 
         <div className="flex-1 overflow-hidden relative">
           <Routes>
             <Route path="/" element={<Creator />} />
             <Route path="/book" element={<Book />} />
+            <Route path="/great-spells" element={<GreatSpells />} />
           </Routes>
         </div>
       </div>

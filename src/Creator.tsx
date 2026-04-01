@@ -4,7 +4,25 @@ import { Plus, Trash2, Download, Book, Sparkles, PenTool, XCircle, Check, ArrowL
 import { HexCanvas } from './components/HexCanvas';
 import { HexMiniature } from './components/HexMiniature';
 import { generateId, parseHexAngles, recenterPath, pathToHexAngles, rotatePath } from './utils/hexUtils';
-import { HEX_DICTIONARY } from './constants/hexDictionary';
+import greatSpellsData from './constants/hex_spells_Great Spells.json';
+import allSpellsData from './constants/hex_spells.json';
+
+const getGreatSpellsText = () => {
+  let text = '\n\nВЕЛИКІ РУНИ (GREAT SPELLS) ДЛЯ ЦЬОГО СВІТУ:\n';
+  text += greatSpellsData.map(s => `- ${s.name}: ${s.patterns[0]}`).join('\n');
+  
+  const savedGreatSpells = localStorage.getItem('hex_custom_great_spells');
+  if (savedGreatSpells) {
+    try {
+      const parsed = JSON.parse(savedGreatSpells);
+      const entries = Object.entries(parsed).filter(([_, val]) => val);
+      if (entries.length > 0) {
+        text += '\n' + entries.map(([name, pattern]) => `- ${name}: ${pattern}`).join('\n');
+      }
+    } catch (e) {}
+  }
+  return text;
+};
 
 export default function Creator() {
   const location = useLocation();
@@ -145,34 +163,34 @@ export default function Creator() {
   };
 
   const handleDownloadDictionary = () => {
-    downloadJsonStr(HEX_DICTIONARY, 'hex_casting_dictionary.json');
+    downloadJsonStr(allSpellsData, 'hex_casting_dictionary.json');
   };
 
   const handleCopyNotebookLMPrompt = () => {
-    const dictionaryText = HEX_DICTIONARY.map(p => `- ${p.name} (${p.type}): ${p.patterns.join(', ')}`).join('\n');
+    const dictionaryText = allSpellsData.map(p => `- ${p.name} (${p.type}): ${p.patterns.join(', ')}`).join('\n');
+    const greatSpellsText = getGreatSpellsText();
+
     const prompt = `Універсальний системний промпт для Hex Casting
 Ти — експерт-заклинач у моді Hex Casting для Minecraft. Твоє завдання — генерувати максимально оптимізовані, робочі та елегантні закляття на основі запитів користувача.
 
 СЛОВНИК БАЗОВИХ ГЛІФІВ:
-${dictionaryText}
-
-ДОДАТКОВІ ГЛІФИ (ДІЇ ТА ЗНАЧЕННЯ):
-- Place Block (Поставити блок): eeeeede
-- Break Block (Зламати блок): qaqqqqq
-- Place Phantom Block (Поставити примарний блок): qqa
-- Число 5 (Numerical Reflection: 5): aqaaq
+${dictionaryText}${greatSpellsText}
 
 ПРАВИЛА НАПИСАННЯ ЗАКЛЯТЬ (ОБОВ'ЯЗКОВО ДО ВИКОНАННЯ):
 1. Математична оптимізація: НІКОЛИ не застосовуй багаторазове додавання векторів (наприклад, waaw кілька разів підряд) для обчислення дистанції чи висоти. ЗАВЖДИ використовуй множення (Multiplicative Distillation).
 Приклад: Щоб отримати висоту 5 блоків, створи одиничний вектор Y (qqqqqew), напиши число 5 (aqaaq) та перемнож їх (waqaw), після чого додай до стартової координати.
 
-2. Фізика гри (Гравітаційні блоки): Будь-який блок, що має падати (ковадло, сталактит, пісок тощо), не може бути розміщений просто в повітрі. Для таких атак завжди дій за таким алгоритмом:
-- Знайди координату цілі.
-- Створи примарний блок-опору (qqa) на 1 блок вище за точку появи гравітаційного блоку (наприклад, H+1, де H — бажана висота падіння).
-- Встанови сам атакуючий/гравітаційний блок (eeeeede) безпосередньо під цією опорою (на висоті H).
-- Зламай примарний блок-опору (qaqqqqq), щоб запустити падіння гравітаційного блоку на ціль.
+2. Фізика гри (Гравітаційні блоки): Будь-який блок, що має падати (ковадло, сталактит, пісок тощо), не може бути розміщений просто в повітрі. Оптимальний алгоритм:
+- Обчисли координату примарного блоку-опори (наприклад, Ціль + 6Y).
+- Продублюй її (aadaa) та створи примарний блок (qqa).
+- Знову продублюй координату опори (aadaa), створи вектор Y (qqqqqew) і відніми його через Subtractive Distillation (wddw), щоб отримати координату під опорою.
+- Встанови атакуючий блок (eeeeede).
+- Зламай примарний блок-опору (qaqqqqq).
+Це дозволяє уникнути повторних обчислень висоти та використання Jester's Gambit.
 
-3. Оптимізація стека: Якщо потрібно виконати кілька дій навколо однієї координати цілі, обов'язково дублюй її за допомогою Gemini Decomposition (aadaa). Використовуй маніпуляції зі стеком, наприклад Jester's Gambit (aawdd), щоб правильно розмістити вектори та цілі перед застосуванням гліфів дії.
+3. Числа (Numerical Reflection): Числа створюються за допомогою базового патерну aqaa (для додатних) або dedd (для від'ємних), до якого додаються суфікси: w (+1), q (+5), e (+10), a (*2), d (/2). Наприклад: 5 = aqaaq (0+5), 6 = aqaaqw (0+5+1), 10 = aqaaqq або aqaae, 3 = aqaawww.
+
+4. Оптимізація стека: Дублюй складні обчислення (наприклад, знайдену координату цілі) через Gemini Decomposition (aadaa). Але для базових сутностей (як-от сам гравець - Mind's Reflection qaq) дешевше і простіше викликати гліф повторно, ніж дублювати його і міняти місцями через Jester's Gambit (aawdd). Не ускладнюй стек без потреби.
 
 ФОРМАТ ВІДПОВІДІ: Відповідай ВИКЛЮЧНО послідовністю патернів (літер), розділених комами і пробілами. Жодних пояснень, привітань, вступних слів чи коментарів. Лише чистий код закляття.`;
     navigator.clipboard.writeText(prompt);
@@ -188,31 +206,30 @@ ${dictionaryText}
       const apiKey = userApiKey || import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "dummy_key";
       const ai = new GoogleGenAI({ apiKey });
       
-      const dictionaryContext = HEX_DICTIONARY.map(p => `- ${p.name}: ${p.patterns.join(', ')} (${p.type})`).join('\n');
+      const dictionaryContext = allSpellsData.map(p => `- ${p.name}: ${p.patterns.join(', ')} (${p.type})`).join('\n');
+      const greatSpellsText = getGreatSpellsText();
       
       const prompt = `Універсальний системний промпт для Hex Casting
 Ти — експерт-заклинач у моді Hex Casting для Minecraft. Твоє завдання — генерувати максимально оптимізовані, робочі та елегантні закляття на основі запитів користувача.
 
 СЛОВНИК БАЗОВИХ ГЛІФІВ:
-${dictionaryContext}
-
-ДОДАТКОВІ ГЛІФИ (ДІЇ ТА ЗНАЧЕННЯ):
-- Place Block (Поставити блок): eeeeede
-- Break Block (Зламати блок): qaqqqqq
-- Place Phantom Block (Поставити примарний блок): qqa
-- Число 5 (Numerical Reflection: 5): aqaaq
+${dictionaryContext}${greatSpellsText}
 
 ПРАВИЛА НАПИСАННЯ ЗАКЛЯТЬ (ОБОВ'ЯЗКОВО ДО ВИКОНАННЯ):
 1. Математична оптимізація: НІКОЛИ не застосовуй багаторазове додавання векторів (наприклад, waaw кілька разів підряд) для обчислення дистанції чи висоти. ЗАВЖДИ використовуй множення (Multiplicative Distillation).
 Приклад: Щоб отримати висоту 5 блоків, створи одиничний вектор Y (qqqqqew), напиши число 5 (aqaaq) та перемнож їх (waqaw), після чого додай до стартової координати.
 
-2. Фізика гри (Гравітаційні блоки): Будь-який блок, що має падати (ковадло, сталактит, пісок тощо), не може бути розміщений просто в повітрі. Для таких атак завжди дій за таким алгоритмом:
-- Знайди координату цілі.
-- Створи примарний блок-опору (qqa) на 1 блок вище за точку появи гравітаційного блоку.
-- Встанови сам атакуючий/гравітаційний блок (eeeeede) безпосередньо під цією опорою.
-- Зламай примарний блок-опору (qaqqqqq), щоб запустити падіння гравітаційного блоку на ціль.
+2. Фізика гри (Гравітаційні блоки): Будь-який блок, що має падати (ковадло, сталактит, пісок тощо), не може бути розміщений просто в повітрі. Оптимальний алгоритм:
+- Обчисли координату примарного блоку-опори (наприклад, Ціль + 6Y).
+- Продублюй її (aadaa) та створи примарний блок (qqa).
+- Знову продублюй координату опори (aadaa), створи вектор Y (qqqqqew) і відніми його через Subtractive Distillation (wddw), щоб отримати координату під опорою.
+- Встанови атакуючий блок (eeeeede).
+- Зламай примарний блок-опору (qaqqqqq).
+Це дозволяє уникнути повторних обчислень висоти та використання Jester's Gambit.
 
-3. Оптимізація стека: Якщо потрібно виконати кілька дій навколо однієї координати цілі, обов'язково дублюй її за допомогою Gemini Decomposition (aadaa). Використовуй маніпуляції зі стеком, наприклад Jester's Gambit (aawdd), щоб правильно розмістити вектори та цілі перед застосуванням гліфів дії.
+3. Числа (Numerical Reflection): Числа створюються за допомогою базового патерну aqaa (для додатних) або dedd (для від'ємних), до якого додаються суфікси: w (+1), q (+5), e (+10), a (*2), d (/2). Наприклад: 5 = aqaaq (0+5), 6 = aqaaqw (0+5+1), 10 = aqaaqq або aqaae, 3 = aqaawww.
+
+4. Оптимізація стека: Дублюй складні обчислення (наприклад, знайдену координату цілі) через Gemini Decomposition (aadaa). Але для базових сутностей (як-от сам гравець - Mind's Reflection qaq) дешевше і простіше викликати гліф повторно, ніж дублювати його і міняти місцями через Jester's Gambit (aawdd). Не ускладнюй стек без потреби.
 
 ЗАПИТ КОРИСТУВАЧА: Напиши закляття для: ${aiIntention}
 
@@ -245,7 +262,7 @@ ${dictionaryContext}
         description: `Згенеровано ШІ за запитом: ${aiIntention}`,
         patterns: rawPatterns.map((patternStr, index) => {
           const startDir = dict[patternStr] !== undefined ? dict[patternStr] : 0;
-          const knownPattern = HEX_DICTIONARY.find(p => p.patterns.includes(patternStr));
+          const knownPattern = allSpellsData.find(p => p.patterns.includes(patternStr));
           return {
             id: generateId(),
             name: knownPattern ? knownPattern.name : `Гліф ${index + 1} (${patternStr})`,
@@ -280,7 +297,7 @@ ${dictionaryContext}
 
     const newPatterns = rawPatterns.map((patternStr, index) => {
       const startDir = dict[patternStr] !== undefined ? dict[patternStr] : 0;
-      const knownPattern = HEX_DICTIONARY.find(p => p.patterns.includes(patternStr));
+      const knownPattern = allSpellsData.find(p => p.patterns.includes(patternStr));
       return {
         id: generateId(),
         name: knownPattern ? knownPattern.name : `Гліф ${index + 1} (${patternStr})`,
@@ -327,7 +344,7 @@ ${dictionaryContext}
   const handleAddGlyph = () => {
     const newPatterns = isMultiMode ? draftPaths.map(path => {
       const { angles } = pathToHexAngles(path);
-      const knownPattern = angles ? HEX_DICTIONARY.find(p => p.patterns.includes(angles)) : null;
+      const knownPattern = angles ? allSpellsData.find(p => p.patterns.includes(angles)) : null;
       return {
         id: generateId(),
         name: knownPattern ? knownPattern.name : '',
@@ -338,7 +355,7 @@ ${dictionaryContext}
     
     if (currentDraftPath.length > 1) {
       const { angles } = pathToHexAngles(currentDraftPath);
-      const knownPattern = angles ? HEX_DICTIONARY.find(p => p.patterns.includes(angles)) : null;
+      const knownPattern = angles ? allSpellsData.find(p => p.patterns.includes(angles)) : null;
       newPatterns.push({
         id: generateId(),
         name: knownPattern ? knownPattern.name : '',
@@ -405,6 +422,10 @@ ${dictionaryContext}
 
   const handleUpdatePatternName = (patternId: string, newName: string) => {
     setActiveSpell((prev: any) => ({ ...prev, patterns: (prev.patterns || []).map((p: any) => p.id === patternId ? { ...p, name: newName } : p) }));
+  };
+
+  const handleUpdatePatternDescription = (patternId: string, newDescription: string) => {
+    setActiveSpell((prev: any) => ({ ...prev, patterns: (prev.patterns || []).map((p: any) => p.id === patternId ? { ...p, description: newDescription } : p) }));
   };
 
   const handleRotatePattern = (patternId: string) => {
@@ -647,7 +668,7 @@ ${dictionaryContext}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {(activeSpell.patterns || []).map((p: any, i: number) => {
                   const { angles } = pathToHexAngles(p.path);
-                  const isVerified = angles ? HEX_DICTIONARY.some(dp => dp.patterns.includes(angles)) : false;
+                  const isQuestionable = angles ? !allSpellsData.some(dp => dp.patterns.includes(angles)) : false;
                   
                   return (
                     <div 
@@ -662,15 +683,15 @@ ${dictionaryContext}
                       <div className="cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 p-1 -ml-2">
                         <GripVertical size={16} />
                       </div>
-                      {isVerified && (
-                        <div className="absolute -top-1.5 -right-1.5 bg-yellow-500 text-slate-950 p-0.5 rounded-full shadow-lg z-10" title="Перевірений гліф">
+                      {isQuestionable && (
+                        <div className="absolute -top-1.5 -right-1.5 bg-yellow-500 text-slate-950 p-0.5 rounded-full shadow-lg z-10" title="Невідомий гліф">
                           <Sparkles size={10} fill="currentColor" />
                         </div>
                       )}
                       <div className="w-12 h-12 bg-slate-900 rounded-lg border border-slate-800 p-1 shrink-0">
                         <HexMiniature path={p.path} fade={true} />
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 flex flex-col gap-1">
                         <input 
                           type="text" 
                           value={p.name} 
@@ -678,7 +699,14 @@ ${dictionaryContext}
                           placeholder="Назва..."
                           className="w-full bg-transparent text-sm font-bold text-slate-200 outline-none border-b border-transparent focus:border-purple-500 transition-all"
                         />
-                        <div className="text-[10px] font-mono text-purple-400/70 mt-0.5 truncate" title={angles || 'Початковий вузол'}>
+                        <input 
+                          type="text" 
+                          value={p.description || ''} 
+                          onChange={(e) => handleUpdatePatternDescription(p.id, e.target.value)}
+                          placeholder="Опис гліфа..."
+                          className="w-full bg-transparent text-xs text-slate-400 outline-none border-b border-transparent focus:border-purple-500/50 transition-all"
+                        />
+                        <div className="text-[10px] font-mono text-purple-400/70 truncate" title={angles || 'Початковий вузол'}>
                           {angles || 'Початковий вузол'}
                         </div>
                       </div>
@@ -771,8 +799,14 @@ ${dictionaryContext}
                 <div className="flex flex-wrap gap-2">
                   <button 
                     onClick={() => {
+                      const greatSpellsText = getGreatSpellsText();
+                      const dictionaryText = allSpellsData.map(p => `- ${p.name} (${p.type}): ${p.patterns.join(', ')}`).join('\n');
+
                       const prompt = `Універсальний системний промпт для Hex Casting
 Ти — експерт-заклинач у моді Hex Casting для Minecraft. Твоє завдання — генерувати максимально оптимізовані, робочі та елегантні закляття на основі запитів користувача.
+
+СЛОВНИК БАЗОВИХ ГЛІФІВ:
+${dictionaryText}${greatSpellsText}
 
 ЗАПИТ КОРИСТУВАЧА: Напиши закляття для: ${aiIntention || '[ваша ідея]'}
 
@@ -780,13 +814,17 @@ ${dictionaryContext}
 1. Математична оптимізація: НІКОЛИ не застосовуй багаторазове додавання векторів (наприклад, waaw кілька разів підряд) для обчислення дистанції чи висоти. ЗАВЖДИ використовуй множення (Multiplicative Distillation).
 Приклад: Щоб отримати висоту 5 блоків, створи одиничний вектор Y (qqqqqew), напиши число 5 (aqaaq) та перемнож їх (waqaw), після чого додай до стартової координати.
 
-2. Фізика гри (Гравітаційні блоки): Будь-який блок, що має падати (ковадло, сталактит, пісок тощо), не може бути розміщений просто в повітрі. Для таких атак завжди дій за таким алгоритмом:
-- Знайди координату цілі.
-- Створи примарний блок-опору (qqa) на 1 блок вище за точку появи гравітаційного блоку.
-- Встанови сам атакуючий/гравітаційний блок (eeeeede) безпосередньо під цією опорою.
-- Зламай примарний блок-опору (qaqqqqq), щоб запустити падіння гравітаційного блоку на ціль.
+2. Фізика гри (Гравітаційні блоки): Будь-який блок, що має падати (ковадло, сталактит, пісок тощо), не може бути розміщений просто в повітрі. Оптимальний алгоритм:
+- Обчисли координату примарного блоку-опори (наприклад, Ціль + 6Y).
+- Продублюй її (aadaa) та створи примарний блок (qqa).
+- Знову продублюй координату опори (aadaa), створи вектор Y (qqqqqew) і відніми його через Subtractive Distillation (wddw), щоб отримати координату під опорою.
+- Встанови атакуючий блок (eeeeede).
+- Зламай примарний блок-опору (qaqqqqq).
+Це дозволяє уникнути повторних обчислень висоти та використання Jester's Gambit.
 
-3. Оптимізація стека: Якщо потрібно виконати кілька дій навколо однієї координати цілі, обов'язково дублюй її за допомогою Gemini Decomposition (aadaa). Використовуй маніпуляції зі стеком, наприклад Jester's Gambit (aawdd), щоб правильно розмістити вектори та цілі перед застосуванням гліфів дії.
+3. Числа (Numerical Reflection): Числа створюються за допомогою базового патерну aqaa (для додатних) або dedd (для від'ємних), до якого додаються суфікси: w (+1), q (+5), e (+10), a (*2), d (/2). Наприклад: 5 = aqaaq (0+5), 6 = aqaaqw (0+5+1), 10 = aqaaqq або aqaae, 3 = aqaawww.
+
+4. Оптимізація стека: Дублюй складні обчислення (наприклад, знайдену координату цілі) через Gemini Decomposition (aadaa). Але для базових сутностей (як-от сам гравець - Mind's Reflection qaq) дешевше і простіше викликати гліф повторно, ніж дублювати його і міняти місцями через Jester's Gambit (aawdd). Не ускладнюй стек без потреби.
 
 ОБОВ'ЯЗКОВО використай пошук в інтернеті, щоб знайти правильні патерни (наприклад, Mind's Reflection, Archer's Distillation, Ignite) та їхні точні послідовності кутів (angles), якщо ти їх не знаєш.
 
