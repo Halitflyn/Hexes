@@ -1,6 +1,6 @@
 export const VIEWBOX_SIZE = 2000; 
 export const HEX_SIZE = 32; 
-export const GRID_RADIUS = 40; 
+export const GRID_RADIUS = 30; 
 
 export const getNodeCoords = (q: number, r: number) => {
   return {
@@ -37,6 +37,77 @@ export const hasEdge = (path: string[], id1: string, id2: string) => {
     if ((a === id1 && b === id2) || (a === id2 && b === id1)) return true;
   }
   return false;
+};
+
+export const hasOverlappingEdges = (path: string[]) => {
+  if (!path || !Array.isArray(path)) return false;
+  const edges = new Set<string>();
+  for (let i = 0; i < path.length - 1; i++) {
+    const a = path[i];
+    const b = path[i+1];
+    const edge1 = `${a}-${b}`;
+    const edge2 = `${b}-${a}`;
+    if (edges.has(edge1) || edges.has(edge2)) {
+      return true;
+    }
+    edges.add(edge1);
+    edges.add(edge2);
+  }
+  return false;
+};
+
+export const getRoundedSegmentPath = (points: {x: number, y: number}[], i: number, radius: number = 8) => {
+  const p0 = points[i];
+  const p1 = points[i+1];
+  if (!p0 || !p1) return "";
+  
+  let startX = p0.x;
+  let startY = p0.y;
+  
+  if (i > 0) {
+    const dx = p1.x - p0.x;
+    const dy = p1.y - p0.y;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    startX = p0.x + (dx/len) * radius;
+    startY = p0.y + (dy/len) * radius;
+  }
+  
+  let endX = p1.x;
+  let endY = p1.y;
+  let curve = "";
+  
+  if (i < points.length - 2) {
+    const next = points[i+2];
+    
+    const dxIn = p0.x - p1.x;
+    const dyIn = p0.y - p1.y;
+    const lenIn = Math.sqrt(dxIn*dxIn + dyIn*dyIn);
+    const p1StartX = p1.x + (dxIn/lenIn) * radius;
+    const p1StartY = p1.y + (dyIn/lenIn) * radius;
+    
+    const dxOut = next.x - p1.x;
+    const dyOut = next.y - p1.y;
+    const lenOut = Math.sqrt(dxOut*dxOut + dyOut*dyOut);
+    const p1EndX = p1.x + (dxOut/lenOut) * radius;
+    const p1EndY = p1.y + (dyOut/lenOut) * radius;
+    
+    endX = p1StartX;
+    endY = p1StartY;
+    curve = ` Q ${p1.x},${p1.y} ${p1EndX},${p1EndY}`;
+  }
+  
+  return `M ${startX},${startY} L ${endX},${endY}${curve}`;
+};
+
+export const getRoundedPath = (points: {x: number, y: number}[], radius: number = 8) => {
+  if (points.length === 0) return "";
+  if (points.length === 1) return `M ${points[0].x},${points[0].y}`;
+  
+  let d = "";
+  for (let i = 0; i < points.length - 1; i++) {
+    d += getRoundedSegmentPath(points, i, radius) + " ";
+  }
+  return d.trim();
 };
 
 export const parseHexAngles = (angleString: string, startDir: number = 0) => {
@@ -140,6 +211,24 @@ export const rotatePath = (path: string[], turns: number = 1) => {
   }
   
   return currentPath;
+};
+
+export const parseNumericalReflection = (pattern: string) => {
+  if (!pattern) return 0;
+  const isNegative = pattern.startsWith('dedd');
+  const isPositive = pattern.startsWith('aqaa');
+  if (!isNegative && !isPositive) return null;
+  
+  let val = 0;
+  const suffixes = pattern.slice(4);
+  for (const char of suffixes) {
+    if (char === 'w') val += 1;
+    else if (char === 'q') val += 5;
+    else if (char === 'e') val += 10;
+    else if (char === 'a') val *= 2;
+    else if (char === 'd') val /= 2;
+  }
+  return isNegative ? -val : val;
 };
 
 export const generateId = () => {

@@ -1,11 +1,43 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Plus, Trash2, Download, Book, Sparkles, PenTool, XCircle, Check, ArrowLeft, ArrowRight, Minus, ArrowUp, ArrowDown, Upload, Share2, Wand2, Bot, Copy, Undo, RotateCw, Bookmark, Code, FileJson, GripVertical } from 'lucide-react';
+import { Plus, Trash2, Download, Book, Sparkles, PenTool, XCircle, Check, ArrowLeft, ArrowRight, Minus, ArrowUp, ArrowDown, Upload, Share2, Wand2, Bot, Copy, Undo, RotateCw, Bookmark, Code, FileJson, GripVertical, AlertTriangle, HelpCircle } from 'lucide-react';
 import { HexCanvas } from './components/HexCanvas';
 import { HexMiniature } from './components/HexMiniature';
-import { generateId, parseHexAngles, recenterPath, pathToHexAngles, rotatePath } from './utils/hexUtils';
+import { generateId, parseHexAngles, recenterPath, pathToHexAngles, rotatePath, parseNumericalReflection, hasOverlappingEdges } from './utils/hexUtils';
 import greatSpellsData from './constants/hex_spells_Great Spells.json';
 import allSpellsData from './constants/hex_spells.json';
+
+const PROMPT_RULES = `ПРАВИЛА НАПИСАННЯ ЗАКЛЯТЬ (ОБОВ'ЯЗКОВО ДО ВИКОНАННЯ):
+1. Математична оптимізація: НІКОЛИ не застосовуй багаторазове додавання векторів (наприклад, waaw кілька разів підряд) для обчислення дистанції чи висоти. ЗАВЖДИ використовуй множення (Multiplicative Distillation).
+Приклад: Щоб отримати висоту 5 блоків, створи одиничний вектор Y (qqqqqew), напиши число 5 (aqaaq) та перемнож їх (waqaw), після чого додай до стартової координати.
+
+2. Фізика гри (Гравітаційні блоки): Будь-який блок, що має падати (ковадло, сталактит, пісок тощо), не може бути розміщений просто в повітрі. Оптимальний алгоритм:
+- Обчисли координату примарного блоку-опори (наприклад, Ціль + 6Y).
+- Продублюй її (aadaa) та створи примарний блок (qqa).
+- Знову продублюй координату опори (aadaa), створи вектор Y (qqqqqew) і відніми його через Subtractive Distillation (wddw), щоб отримати координату під опорою.
+- Встанови атакуючий блок (eeeeede).
+- Зламай примарний блок-опору (qaqqqqq).
+Це дозволяє уникнути повторних обчислень висоти та використання Jester's Gambit.
+
+3. Числа (Numerical Reflection): Числа створюються за допомогою базового патерну aqaa (для додатних) або dedd (для від'ємних), до якого додаються суфікси: w (+1), q (+5), e (+10), a (x2), d (/2).
+ВАЖЛИВО: Ребра гліфа НІКОЛИ не повинні накладатися одне на одне. Щоб уникнути накладання при діленні, використовуй патерн з наростаючими зміщеннями 'ad'.
+Приклад 0.0625 (4 ділення): aqaawdaddadadaddadadadadd (використано 'dadd' для перших двох ділень, потім 'adadadd' для третього, 'adadadadd' для четвертого).
+Приклад 0.03125 (5 ділень): aqaawdaddadadaddadadadaddadadadadadd (кожен наступний блок ділення має на одне 'ad' більше).
+Приклад великого числа без накладання: aqaawwwwwwwwdwwdwwwdwwwwd (результат ~3.5, але без накладання).
+
+4. Оптимізація стека: Дублюй складні обчислення (наприклад, знайдену координату цілі) через Gemini Decomposition (aadaa). Але для базових сутностей (як-от сам гравець - Mind's Reflection qaq) дешевше і простіше викликати гліф повторно, ніж дублювати його і міняти місцями через Jester's Gambit (aawdd). Не ускладнюй стек без потреби.
+
+5. Специфіка конкретних гліфів (Impulse та Anchorite's Flight):
+- Impulse (awqqqwaqw): Ціна працює за правилом Y=X*X (де X - сила імпульсу). Але якщо в одному заклятті є 2 або більше імпульсів, то для першого Y=X*X, а для всіх наступних Y=X*X+1. Тому вигідно розбивати масштабні рухи на кілька дрібних заклять.
+- Anchorite's Flight (awawaawq): Вхідна дистанція впливає на максимальну ширину (горизонтальну) польоту. Ми можемо зробити її неймовірно малою, якщо треба літати тільки по вертикалі (як ліфт), і це буде настільки дешево, що майже не витрачатиме ману. Проте число не може бути нулем. Наприклад, 0.1^2^2^2^2 є занадто малим і прирівнюється до нуля. Але ми можемо зробити (0.1^2^2^2) * (0.1^2^2^2) * (0.1^2^2^2) (з використанням множення), чого вистачить для стабільної роботи закляття. Нюанс: під час такого польоту не можна рухатися по горизонталі ні на міліметр, бо закляття миттєво спадає.
+
+6. Формат посилання: Якщо користувач попросить "промпт для посилання", надай лише послідовність літер через кому (наприклад: qaq, aa, wa).
+
+ПРИКЛАДИ РОБОЧИХ ЗАКЛЯТЬ:
+- Break Block at distance: qaq, aa, qaq, wa, wqaawdd, qaqqqqq (Mind's Reflection, Compass' Purification, Mind's Reflection, Alidade's Purification, Archer's Distillation, Break Block)
+- Create Water: qaq, aa, aqawqadaq (Mind's Reflection, Compass' Purification, Create Water)
+
+ФОРМАТ ВІДПОВІДІ: Відповідай ВИКЛЮЧНО послідовністю патернів (літер), розділених комами і пробілами. Жодних пояснень, привітань, вступних слів чи коментарів. Лише чистий код закляття.`;
 
 const getGreatSpellsText = () => {
   let text = '\n\nВЕЛИКІ РУНИ (GREAT SPELLS) ДЛЯ ЦЬОГО СВІТУ:\n';
@@ -39,6 +71,7 @@ export default function Creator() {
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [manualAiCode, setManualAiCode] = useState('');
   const [savedTemplates, setSavedTemplates] = useState<Record<string, boolean>>({});
+  const [customGreatSpells, setCustomGreatSpells] = useState<Record<string, string>>({});
   const [userApiKey, setUserApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
 
   const [activeSpell, setActiveSpell] = useState<any>({
@@ -49,12 +82,19 @@ export default function Creator() {
   const [draftPaths, setDraftPaths] = useState<string[][]>([]);
   const [currentDraftPath, setCurrentDraftPath] = useState<string[]>([]);
   const [draftHistory, setDraftHistory] = useState<{paths: string[][], current: string[]}[]>([]);
-  const [zoom, setZoom] = useState(window.innerWidth < 768 ? 250 : 100);
+  const [zoom, setZoom] = useState(window.innerWidth < 768 ? 450 : 100);
   const [startDir, setStartDir] = useState(0); // 0 to 5 for the 6 hex directions
 
-  const getDefaultZoom = () => window.innerWidth < 768 ? 250 : 100;
+  const getDefaultZoom = () => window.innerWidth < 768 ? 450 : 100;
 
   useEffect(() => {
+    const savedCustomGreatSpells = localStorage.getItem('hex_custom_great_spells');
+    if (savedCustomGreatSpells) {
+      try {
+        setCustomGreatSpells(JSON.parse(savedCustomGreatSpells));
+      } catch (e) { console.error(e); }
+    }
+
     const saved = localStorage.getItem('hex_casting_grimoire');
     let localSpells = [];
     if (saved) {
@@ -92,6 +132,13 @@ export default function Creator() {
           console.error("Failed to parse shared spell", e);
           setAlertMessage("Не вдалося завантажити закляття з посилання. Можливо, посилання пошкоджене.");
         }
+      } else {
+        const savedDraft = localStorage.getItem('hex_casting_creator_draft');
+        if (savedDraft) {
+          try {
+            setActiveSpell(JSON.parse(savedDraft));
+          } catch (e) { console.error("Помилка читання чернетки", e); }
+        }
       }
     }
     
@@ -102,6 +149,10 @@ export default function Creator() {
   useEffect(() => {
     if (isLoaded) localStorage.setItem('hex_casting_grimoire', JSON.stringify(spells));
   }, [spells, isLoaded]);
+
+  useEffect(() => {
+    if (isLoaded) localStorage.setItem('hex_casting_creator_draft', JSON.stringify(activeSpell));
+  }, [activeSpell, isLoaded]);
 
   useEffect(() => {
     localStorage.setItem('gemini_api_key', userApiKey);
@@ -176,23 +227,7 @@ export default function Creator() {
 СЛОВНИК БАЗОВИХ ГЛІФІВ:
 ${dictionaryText}${greatSpellsText}
 
-ПРАВИЛА НАПИСАННЯ ЗАКЛЯТЬ (ОБОВ'ЯЗКОВО ДО ВИКОНАННЯ):
-1. Математична оптимізація: НІКОЛИ не застосовуй багаторазове додавання векторів (наприклад, waaw кілька разів підряд) для обчислення дистанції чи висоти. ЗАВЖДИ використовуй множення (Multiplicative Distillation).
-Приклад: Щоб отримати висоту 5 блоків, створи одиничний вектор Y (qqqqqew), напиши число 5 (aqaaq) та перемнож їх (waqaw), після чого додай до стартової координати.
-
-2. Фізика гри (Гравітаційні блоки): Будь-який блок, що має падати (ковадло, сталактит, пісок тощо), не може бути розміщений просто в повітрі. Оптимальний алгоритм:
-- Обчисли координату примарного блоку-опори (наприклад, Ціль + 6Y).
-- Продублюй її (aadaa) та створи примарний блок (qqa).
-- Знову продублюй координату опори (aadaa), створи вектор Y (qqqqqew) і відніми його через Subtractive Distillation (wddw), щоб отримати координату під опорою.
-- Встанови атакуючий блок (eeeeede).
-- Зламай примарний блок-опору (qaqqqqq).
-Це дозволяє уникнути повторних обчислень висоти та використання Jester's Gambit.
-
-3. Числа (Numerical Reflection): Числа створюються за допомогою базового патерну aqaa (для додатних) або dedd (для від'ємних), до якого додаються суфікси: w (+1), q (+5), e (+10), a (*2), d (/2). Наприклад: 5 = aqaaq (0+5), 6 = aqaaqw (0+5+1), 10 = aqaaqq або aqaae, 3 = aqaawww.
-
-4. Оптимізація стека: Дублюй складні обчислення (наприклад, знайдену координату цілі) через Gemini Decomposition (aadaa). Але для базових сутностей (як-от сам гравець - Mind's Reflection qaq) дешевше і простіше викликати гліф повторно, ніж дублювати його і міняти місцями через Jester's Gambit (aawdd). Не ускладнюй стек без потреби.
-
-ФОРМАТ ВІДПОВІДІ: Відповідай ВИКЛЮЧНО послідовністю патернів (літер), розділених комами і пробілами. Жодних пояснень, привітань, вступних слів чи коментарів. Лише чистий код закляття.`;
+${PROMPT_RULES}`;
     navigator.clipboard.writeText(prompt);
     setAlertMessage('Промпт для NotebookLM (з пріоритетом словника) скопійовано!');
   };
@@ -215,27 +250,11 @@ ${dictionaryText}${greatSpellsText}
 СЛОВНИК БАЗОВИХ ГЛІФІВ:
 ${dictionaryContext}${greatSpellsText}
 
-ПРАВИЛА НАПИСАННЯ ЗАКЛЯТЬ (ОБОВ'ЯЗКОВО ДО ВИКОНАННЯ):
-1. Математична оптимізація: НІКОЛИ не застосовуй багаторазове додавання векторів (наприклад, waaw кілька разів підряд) для обчислення дистанції чи висоти. ЗАВЖДИ використовуй множення (Multiplicative Distillation).
-Приклад: Щоб отримати висоту 5 блоків, створи одиничний вектор Y (qqqqqew), напиши число 5 (aqaaq) та перемнож їх (waqaw), після чого додай до стартової координати.
-
-2. Фізика гри (Гравітаційні блоки): Будь-який блок, що має падати (ковадло, сталактит, пісок тощо), не може бути розміщений просто в повітрі. Оптимальний алгоритм:
-- Обчисли координату примарного блоку-опори (наприклад, Ціль + 6Y).
-- Продублюй її (aadaa) та створи примарний блок (qqa).
-- Знову продублюй координату опори (aadaa), створи вектор Y (qqqqqew) і відніми його через Subtractive Distillation (wddw), щоб отримати координату під опорою.
-- Встанови атакуючий блок (eeeeede).
-- Зламай примарний блок-опору (qaqqqqq).
-Це дозволяє уникнути повторних обчислень висоти та використання Jester's Gambit.
-
-3. Числа (Numerical Reflection): Числа створюються за допомогою базового патерну aqaa (для додатних) або dedd (для від'ємних), до якого додаються суфікси: w (+1), q (+5), e (+10), a (*2), d (/2). Наприклад: 5 = aqaaq (0+5), 6 = aqaaqw (0+5+1), 10 = aqaaqq або aqaae, 3 = aqaawww.
-
-4. Оптимізація стека: Дублюй складні обчислення (наприклад, знайдену координату цілі) через Gemini Decomposition (aadaa). Але для базових сутностей (як-от сам гравець - Mind's Reflection qaq) дешевше і простіше викликати гліф повторно, ніж дублювати його і міняти місцями через Jester's Gambit (aawdd). Не ускладнюй стек без потреби.
+${PROMPT_RULES}
 
 ЗАПИТ КОРИСТУВАЧА: Напиши закляття для: ${aiIntention}
 
-ОБОВ'ЯЗКОВО використай пошук в інтернеті, щоб знайти правильні патерни (наприклад, Mind's Reflection, Archer's Distillation, Ignite) та їхні точні послідовності кутів (angles), якщо їх немає в списку вище.
-
-ФОРМАТ ВІДПОВІДІ: Відповідай ВИКЛЮЧНО послідовністю патернів (літер), розділених комами і пробілами. Жодних пояснень, привітань, вступних слів чи коментарів. Лише чистий код закляття.`;
+ОБОВ'ЯЗКОВО використай пошук в інтернеті, щоб знайти правильні патерни (наприклад, Mind's Reflection, Archer's Distillation, Ignite) та їхні точні послідовності кутів (angles), якщо їх немає в списку вище.`;
       
       const response = await ai.models.generateContent({
         model: 'gemini-3.1-pro-preview',
@@ -333,8 +352,19 @@ ${dictionaryContext}${greatSpellsText}
       const spellString = JSON.stringify(activeSpell);
       const encoded = btoa(encodeURIComponent(spellString));
       const url = `${window.location.origin}${window.location.pathname}#/?spell=${encoded}`;
-      navigator.clipboard.writeText(url);
-      setAlertMessage('Посилання на закляття скопійовано в буфер обміну!');
+      
+      const patternsText = activeSpell.patterns.map((p: any) => {
+        const { angles } = pathToHexAngles(p.path);
+        return angles || '';
+      }).filter(Boolean).join(', ');
+
+      const shareText = `Закляття: ${activeSpell.name || 'Без назви'}
+Опис: ${activeSpell.description || 'Немає опису'}
+Гліфи: ${patternsText}
+Посилання: ${url}`;
+
+      navigator.clipboard.writeText(shareText);
+      setAlertMessage('Закляття з описом та посиланням скопійовано в буфер обміну!');
     } catch (e) {
       console.error("Share error", e);
       setAlertMessage('Помилка при створенні посилання. Можливо, закляття занадто велике.');
@@ -381,7 +411,7 @@ ${dictionaryContext}${greatSpellsText}
     setCurrentDraftPath([]);
   };
 
-  const handleZoomIn = () => setZoom(z => Math.min(z + 25, 300));
+  const handleZoomIn = () => setZoom(z => Math.min(z + 25, 600));
   const handleZoomOut = () => setZoom(z => Math.max(z - 25, 50));
 
   const handleSaveToGrimoire = () => {
@@ -521,11 +551,31 @@ ${dictionaryContext}${greatSpellsText}
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-950 text-slate-200 no-scrollbar h-screen overflow-hidden">
+    <div className="flex-1 flex flex-col bg-slate-950 text-slate-200 no-scrollbar h-full overflow-hidden">
       <input type="file" accept=".json" ref={fileInputRef} onChange={handleImportJson} className="hidden" />
 
       {/* Main Content Area - Everything scrolls together */}
-      <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col pt-12">
+      <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col pt-4">
+        {/* Logo and Title Section */}
+        <div className="shrink-0 px-6 py-4 flex items-center gap-4 bg-slate-900/50">
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            <svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative">
+              <path d="M50 5L89.5 27.5V72.5L50 95L10.5 72.5V27.5L50 5Z" stroke="#8B5CF6" strokeWidth="4" strokeLinejoin="round"/>
+              <path d="M50 20L76 35V65L50 80L24 65V35L50 20Z" stroke="#C084FC" strokeWidth="2" strokeDasharray="4 4"/>
+              <circle cx="50" cy="50" r="8" fill="#D946EF">
+                <animate attributeName="r" values="8;12;8" dur="3s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite" />
+              </circle>
+              <path d="M35 50L50 35L65 50L50 65L35 50Z" stroke="white" strokeWidth="1" opacity="0.3" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-xl font-black tracking-tighter text-white uppercase italic">Hex <span className="text-purple-500">Creator</span></h1>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Advanced Spell Engineering</p>
+          </div>
+        </div>
+
         {/* Top Section: Spell Details & Actions - Now scrollable */}
         <div className="shrink-0 bg-slate-900 border-b border-slate-800 p-4 md:p-6">
           <div className="w-full flex flex-col gap-4">
@@ -640,7 +690,7 @@ ${dictionaryContext}${greatSpellsText}
             </div>
           </div>
           
-          <div className="relative flex items-center justify-center overflow-hidden bg-slate-950 h-[60vh] md:h-[80vh]">
+          <div className="relative flex items-center justify-center overflow-hidden bg-slate-950 h-[40vh] md:h-[60vh]">
             {/* Canvas Container - Responsive height */}
             <div className="w-full h-full max-h-full flex items-center justify-center p-2">
               <div className="w-full h-full max-w-full max-h-full relative touch-none">
@@ -668,7 +718,11 @@ ${dictionaryContext}${greatSpellsText}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {(activeSpell.patterns || []).map((p: any, i: number) => {
                   const { angles } = pathToHexAngles(p.path);
-                  const isQuestionable = angles ? !allSpellsData.some(dp => dp.patterns.includes(angles)) : false;
+                  const isGreatSpell = angles ? (greatSpellsData.some(dp => dp.patterns.includes(angles)) || Object.values(customGreatSpells).includes(angles)) : false;
+                  const isNumber = angles ? (angles.startsWith('aqaa') || angles.startsWith('dedd')) : false;
+                  const isKnownNormal = angles ? allSpellsData.some(dp => dp.patterns.includes(angles)) : false;
+                  const isQuestionable = angles ? !isKnownNormal && !isGreatSpell && !isNumber : false;
+                  const hasOverlap = hasOverlappingEdges(p.path);
                   
                   return (
                     <div 
@@ -678,14 +732,24 @@ ${dictionaryContext}${greatSpellsText}
                       onDragOver={(e) => handleDragOver(e, i)}
                       onDrop={(e) => handleDrop(e, i)}
                       onDragEnd={handleDragEnd}
-                      className={`bg-slate-950 p-3 rounded-xl border flex gap-3 items-center group shadow-lg relative transition-all ${draggedPatternIndex === i ? 'opacity-50 border-purple-500' : 'border-slate-800'}`}
+                      className={`bg-slate-950 p-3 rounded-xl border flex gap-3 items-center group shadow-lg relative transition-all ${draggedPatternIndex === i ? 'opacity-50 border-purple-500' : (hasOverlap ? 'border-red-500/50' : 'border-slate-800')}`}
                     >
                       <div className="cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 p-1 -ml-2">
                         <GripVertical size={16} />
                       </div>
-                      {isQuestionable && (
-                        <div className="absolute -top-1.5 -right-1.5 bg-yellow-500 text-slate-950 p-0.5 rounded-full shadow-lg z-10" title="Невідомий гліф">
-                          <Sparkles size={10} fill="currentColor" />
+                      {hasOverlap && (
+                        <div className="absolute -top-1.5 -left-1.5 bg-red-500 text-white p-0.5 rounded-full shadow-lg z-10 flex items-center justify-center w-4 h-4" title="Помилка: ребра накладаються">
+                          <AlertTriangle size={10} strokeWidth={3} />
+                        </div>
+                      )}
+                      {isQuestionable && !hasOverlap && (
+                        <div className="absolute -top-1.5 -right-1.5 bg-orange-500 text-slate-950 p-0.5 rounded-full shadow-lg z-10 flex items-center justify-center w-4 h-4" title="Невідомий гліф">
+                          <HelpCircle size={10} strokeWidth={3} />
+                        </div>
+                      )}
+                      {isGreatSpell && (
+                        <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white p-0.5 rounded-full shadow-lg z-10 flex items-center justify-center w-4 h-4" title="Велика руна">
+                          <AlertTriangle size={10} fill="currentColor" />
                         </div>
                       )}
                       <div className="w-12 h-12 bg-slate-900 rounded-lg border border-slate-800 p-1 shrink-0">
@@ -706,11 +770,18 @@ ${dictionaryContext}${greatSpellsText}
                           placeholder="Опис гліфа..."
                           className="w-full bg-transparent text-xs text-slate-400 outline-none border-b border-transparent focus:border-purple-500/50 transition-all"
                         />
-                        <div className="text-[10px] font-mono text-purple-400/70 truncate" title={angles || 'Початковий вузол'}>
-                          {angles || 'Початковий вузол'}
+                        <div className="flex items-center gap-2">
+                          <div className="text-[10px] font-mono text-purple-400/70 truncate" title={angles || 'Початковий вузол'}>
+                            {angles || 'Початковий вузол'}
+                          </div>
+                          {(angles.startsWith('aqaa') || angles.startsWith('dedd')) && (
+                            <div className="text-[10px] font-bold text-orange-400 bg-orange-900/30 border border-orange-500/30 px-1.5 py-0.5 rounded shrink-0">
+                              {parseNumericalReflection(angles)}
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex flex-col gap-1">
                         <div className="flex gap-1">
                           <button onClick={() => handleMovePattern(i, -1)} disabled={i === 0} className="p-1 text-slate-500 hover:text-indigo-400 transition-colors disabled:opacity-30"><ArrowLeft size={14} /></button>
                           <button onClick={() => handleMovePattern(i, 1)} disabled={i === (activeSpell.patterns || []).length - 1} className="p-1 text-slate-500 hover:text-indigo-400 transition-colors disabled:opacity-30"><ArrowRight size={14} /></button>
@@ -810,25 +881,9 @@ ${dictionaryText}${greatSpellsText}
 
 ЗАПИТ КОРИСТУВАЧА: Напиши закляття для: ${aiIntention || '[ваша ідея]'}
 
-ПРАВИЛА НАПИСАННЯ ЗАКЛЯТЬ (ОБОВ'ЯЗКОВО ДО ВИКОНАННЯ):
-1. Математична оптимізація: НІКОЛИ не застосовуй багаторазове додавання векторів (наприклад, waaw кілька разів підряд) для обчислення дистанції чи висоти. ЗАВЖДИ використовуй множення (Multiplicative Distillation).
-Приклад: Щоб отримати висоту 5 блоків, створи одиничний вектор Y (qqqqqew), напиши число 5 (aqaaq) та перемнож їх (waqaw), після чого додай до стартової координати.
+${PROMPT_RULES}
 
-2. Фізика гри (Гравітаційні блоки): Будь-який блок, що має падати (ковадло, сталактит, пісок тощо), не може бути розміщений просто в повітрі. Оптимальний алгоритм:
-- Обчисли координату примарного блоку-опори (наприклад, Ціль + 6Y).
-- Продублюй її (aadaa) та створи примарний блок (qqa).
-- Знову продублюй координату опори (aadaa), створи вектор Y (qqqqqew) і відніми його через Subtractive Distillation (wddw), щоб отримати координату під опорою.
-- Встанови атакуючий блок (eeeeede).
-- Зламай примарний блок-опору (qaqqqqq).
-Це дозволяє уникнути повторних обчислень висоти та використання Jester's Gambit.
-
-3. Числа (Numerical Reflection): Числа створюються за допомогою базового патерну aqaa (для додатних) або dedd (для від'ємних), до якого додаються суфікси: w (+1), q (+5), e (+10), a (*2), d (/2). Наприклад: 5 = aqaaq (0+5), 6 = aqaaqw (0+5+1), 10 = aqaaqq або aqaae, 3 = aqaawww.
-
-4. Оптимізація стека: Дублюй складні обчислення (наприклад, знайдену координату цілі) через Gemini Decomposition (aadaa). Але для базових сутностей (як-от сам гравець - Mind's Reflection qaq) дешевше і простіше викликати гліф повторно, ніж дублювати його і міняти місцями через Jester's Gambit (aawdd). Не ускладнюй стек без потреби.
-
-ОБОВ'ЯЗКОВО використай пошук в інтернеті, щоб знайти правильні патерни (наприклад, Mind's Reflection, Archer's Distillation, Ignite) та їхні точні послідовності кутів (angles), якщо ти їх не знаєш.
-
-ФОРМАТ ВІДПОВІДІ: Відповідай ВИКЛЮЧНО послідовністю патернів (літер), розділених комами і пробілами. Жодних пояснень, привітань, вступних слів чи коментарів. Лише чистий код закляття.`;
+ОБОВ'ЯЗКОВО використай пошук в інтернеті, щоб знайти правильні патерни (наприклад, Mind's Reflection, Archer's Distillation, Ignite) та їхні точні послідовності кутів (angles), якщо ти їх не знаєш.`;
                       navigator.clipboard.writeText(prompt);
                       setAlertMessage('Промпт скопійовано! Ви можете вставити його у свій чат з ШІ.');
                     }}

@@ -92,7 +92,7 @@ export const HEX_DICTIONARY: HexPattern[] = [
     "patterns": [
       "aqaa"
     ],
-    "description": "0; wa -<+1*2=2>; wq -<+1+5=6>; ww -<+1+1=2>; we -<+1+10=11>; wd -<+1/2=0.5>"
+    "description": "0; wa -<+1x2=2>; wq -<+1+5=6>; ww -<+1+1=2>; we -<+1+10=11>; wd -<+1/2=0.5>"
   },
   {
     "name": "Additive Distillation",

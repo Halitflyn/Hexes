@@ -1,5 +1,6 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { getGridNodes, getNodeCoords, isNeighbor, hasEdge, VIEWBOX_SIZE, HEX_SIZE } from '../utils/hexUtils';
+import { getGridNodes, getNodeCoords, isNeighbor, hasEdge, VIEWBOX_SIZE, HEX_SIZE, getRoundedPath } from '../utils/hexUtils';
+import { useSettings } from '../hooks/useSettings';
 
 export const HexCanvas = ({ 
   paths = [], 
@@ -19,6 +20,8 @@ export const HexCanvas = ({
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState({ width: 1000, height: 1000 });
   const nodes = useMemo(() => getGridNodes(), []);
+  
+  const { thicknessMultiplier } = useSettings();
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -45,6 +48,17 @@ export const HexCanvas = ({
   
   const viewBoxString = `${offsetX} ${offsetY} ${currentViewBoxWidth} ${currentViewBoxHeight}`;
   const visualScale = 100 / zoom;
+
+  // Optimization: Only render nodes within the current viewbox
+  const visibleNodes = useMemo(() => {
+    const margin = HEX_SIZE * 2;
+    return nodes.filter(node => 
+      node.x >= offsetX - margin && 
+      node.x <= offsetX + currentViewBoxWidth + margin &&
+      node.y >= offsetY - margin && 
+      node.y <= offsetY + currentViewBoxHeight + margin
+    );
+  }, [nodes, offsetX, offsetY, currentViewBoxWidth, currentViewBoxHeight]);
 
   const getPointerCoords = (e: any) => {
     const svg = svgRef.current;
@@ -79,7 +93,7 @@ export const HexCanvas = ({
     const hitRadius = Math.max(HEX_SIZE * 2.2, minHitRadiusSvg);
 
     let closest = null, minDist = Infinity;
-    nodes.forEach(node => {
+    visibleNodes.forEach(node => {
       const dist = Math.hypot(node.x - coords.x, node.y - coords.y);
       if (dist < minDist) { minDist = dist; closest = node; }
     });
@@ -142,16 +156,18 @@ export const HexCanvas = ({
     const pathNodes = path.map(id => nodes.find(n => n.id === id)).filter(Boolean) as any[];
     if (pathNodes.length === 0) return null;
     
-    const polylinePoints = pathNodes.map(n => `${n.x},${n.y}`).join(' ');
+    const pathD = getRoundedPath(pathNodes, 12 * visualScale);
     const strokeColor = isCurrent ? "#c084fc" : "#8b5cf6";
     const opacity = isCurrent ? 1 : 0.6;
+    
+    const pathStrokeWidth = 14 * visualScale * thicknessMultiplier;
 
     return (
       <g key={`path-group-${index}`} style={{ opacity }}>
-        <polyline points={polylinePoints} fill="none" stroke={strokeColor} strokeWidth={9.6 * visualScale} strokeLinecap="round" strokeLinejoin="round" className={isCurrent ? "drop-shadow-[0_0_12px_rgba(192,132,252,0.8)] pointer-events-none" : "pointer-events-none"} />
-        {pathNodes.map((node, i) => <circle key={`node-${index}-${i}`} cx={node.x} cy={node.y} r={2.4 * visualScale} className="fill-purple-300 pointer-events-none" />)}
-        <circle cx={pathNodes[0].x} cy={pathNodes[0].y} r={6.4 * visualScale} strokeWidth={3.2 * visualScale} className="fill-white stroke-purple-600 pointer-events-none drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
-        {pathNodes.length > 1 && <circle cx={pathNodes[pathNodes.length - 1].x} cy={pathNodes[pathNodes.length - 1].y} r={6.4 * visualScale} className="fill-fuchsia-300 pointer-events-none drop-shadow-[0_0_12px_rgba(217,70,239,1)]" />}
+        <path d={pathD} fill="none" stroke={strokeColor} strokeWidth={pathStrokeWidth} strokeLinecap="round" strokeLinejoin="round" className="pointer-events-none" />
+        {pathNodes.map((node, i) => <circle key={`node-${index}-${i}`} cx={node.x} cy={node.y} r={4 * visualScale * thicknessMultiplier} className="fill-purple-300 pointer-events-none" />)}
+        <circle cx={pathNodes[0].x} cy={pathNodes[0].y} r={10 * visualScale * thicknessMultiplier} strokeWidth={5 * visualScale * thicknessMultiplier} className="fill-white stroke-purple-600 pointer-events-none" />
+        {pathNodes.length > 1 && <circle cx={pathNodes[pathNodes.length - 1].x} cy={pathNodes[pathNodes.length - 1].y} r={10 * visualScale * thicknessMultiplier} className="fill-fuchsia-300 pointer-events-none" />}
       </g>
     );
   };
@@ -167,7 +183,7 @@ export const HexCanvas = ({
         onPointerDown={handlePointerDown} onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp}
       >
-        {nodes.map(node => {
+        {visibleNodes.map(node => {
           const isCurrentNeighbor = isDrawing && lastNode && isNeighbor(lastNode, node) && !hasEdge(safeCurrentPath, lastNodeId!, node.id);
           const isHovered = hoveredNodeId === node.id;
           const isOccupied = safePaths.some(path => path.includes(node.id));
@@ -175,9 +191,9 @@ export const HexCanvas = ({
           return (
             <circle 
               key={node.id} cx={node.x} cy={node.y} 
-              r={isCurrentNeighbor ? (3.2 * visualScale) : (isHovered ? (4.8 * visualScale) : (1.6 * visualScale))} 
-              className={`transition-all duration-150 ${isOccupied ? 'fill-slate-800 opacity-30' : isCurrentNeighbor ? 'fill-fuchsia-400 drop-shadow-[0_0_8px_rgba(232,121,249,0.8)] animate-pulse' : isHovered ? 'fill-slate-400 stroke-purple-500' : 'fill-slate-500'}`} 
-              strokeWidth={isHovered ? (3.2 * visualScale) : 0}
+              r={isCurrentNeighbor ? (5 * visualScale) : (isHovered ? (7 * visualScale) : (3 * visualScale))} 
+              className={`transition-all duration-150 ${isOccupied ? 'fill-slate-800 opacity-30' : isCurrentNeighbor ? 'fill-fuchsia-400' : isHovered ? 'fill-slate-400 stroke-purple-500' : 'fill-slate-500'}`} 
+              strokeWidth={isHovered ? (5 * visualScale) : 0}
             />
           );
         })}

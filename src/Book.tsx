@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Book, Sparkles, Upload, Download, Trash2, Share2, Plus, Image as ImageIcon, Video, Link as LinkIcon, Play, X, ChevronRight, ChevronLeft, ArrowLeft, Edit, AlertTriangle } from 'lucide-react';
+import { Book, Sparkles, Upload, Download, Trash2, Share2, Plus, Image as ImageIcon, Video, Link as LinkIcon, Play, X, ChevronRight, ChevronLeft, ArrowLeft, Edit, AlertTriangle, RefreshCw, Globe, Copy } from 'lucide-react';
 import { HexMiniature } from './components/HexMiniature';
 import { AnimatedHex } from './components/AnimatedHex';
-import { generateId, pathToHexAngles } from './utils/hexUtils';
+import { generateId, pathToHexAngles, parseNumericalReflection, parseHexAngles } from './utils/hexUtils';
 
 export default function BookView() {
   const navigate = useNavigate();
@@ -12,12 +12,11 @@ export default function BookView() {
   const [activeSpell, setActiveSpell] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentGlyphIndex, setCurrentGlyphIndex] = useState(0);
+  const [animationKey, setAnimationKey] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [spellToDelete, setSpellToDelete] = useState<string | null>(null);
   const [deleteCountdown, setDeleteCountdown] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [viewMode, setViewMode] = useState<'detailed' | 'general'>('detailed');
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -88,11 +87,14 @@ export default function BookView() {
         setSpells(JSON.parse(saved)); 
       } catch (e) { console.error("Помилка читання localStorage", e); }
     }
+    
     setIsLoaded(true);
   }, []);
 
   useEffect(() => {
-    if (isLoaded) localStorage.setItem('hex_casting_grimoire', JSON.stringify(spells));
+    if (isLoaded) {
+      localStorage.setItem('hex_casting_grimoire', JSON.stringify(spells));
+    }
   }, [spells, isLoaded]);
 
   const handleImportJson = (e: any) => {
@@ -155,6 +157,12 @@ export default function BookView() {
     downloadJsonStr(spells, 'my_grimoire.json');
   };
 
+  const handleDownloadSingleSpell = () => {
+    if (!activeSpell) return;
+    const filename = activeSpell.name ? `${activeSpell.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json` : 'spell.json';
+    downloadJsonStr(activeSpell, filename);
+  };
+
   const handleShareSpell = () => {
     if (!activeSpell) return;
     try {
@@ -167,6 +175,29 @@ export default function BookView() {
       console.error("Share error", e);
       alert('Помилка при створенні посилання. Можливо, закляття занадто велике.');
     }
+  };
+
+  const handleCopyPrompt = () => {
+    if (!activeSpell) return;
+    
+    let promptText = `Назва закляття: ${activeSpell.name}\n`;
+    if (activeSpell.description) {
+      promptText += `Опис: ${activeSpell.description}\n\n`;
+    }
+    
+    promptText += `Гліфи:\n`;
+    (activeSpell.patterns || []).forEach((p: any, i: number) => {
+      const { angles } = pathToHexAngles(p.path);
+      const isNumber = angles.startsWith('aqaa') || angles.startsWith('dedd');
+      const numberVal = isNumber ? parseNumericalReflection(angles) : null;
+      
+      promptText += `${i + 1}. ${p.name || (isNumber ? `Число: ${numberVal}` : 'Без назви')}\n`;
+      if (p.description) promptText += `   Опис: ${p.description}\n`;
+      promptText += `   Кути: ${angles || 'Початковий вузол'}\n\n`;
+    });
+    
+    navigator.clipboard.writeText(promptText);
+    alert('Промпт закляття скопійовано в буфер обміну!');
   };
 
   return (
@@ -189,42 +220,47 @@ export default function BookView() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-          {spells.length === 0 ? (
-            <div className="text-center py-10 text-slate-500">
-              <Sparkles size={48} className="mx-auto mb-4 opacity-20 text-purple-500" />
-              <p>Гримуар порожній.</p>
-              <p className="text-sm mt-2">Імпортуйте закляття або створіть нове у Створювачі.</p>
-            </div>
-          ) : (
-            spells.map(spell => (
-              <div 
-                key={spell.id} 
-                onClick={() => setActiveSpell(spell)}
-                className={`p-4 rounded-xl border cursor-pointer transition-all ${activeSpell?.id === spell.id ? 'bg-purple-900/20 border-purple-500/50' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-slate-100 truncate pr-4">{spell.name}</h3>
-                  <button onClick={(e) => handleDeleteSpell(spell.id, e)} className="text-slate-600 hover:text-red-400 p-1 rounded transition-colors" title="Видалити">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-                <p className="text-xs text-slate-500 line-clamp-2 mb-3">{spell.description || 'Немає опису'}</p>
-                <div className="flex gap-1 overflow-hidden">
-                  {(spell.patterns || []).slice(0, 4).map((p: any) => (
-                    <div key={p.id} className="w-8 h-8 bg-slate-900 rounded border border-slate-800 p-0.5">
-                      <HexMiniature path={p.path} fade={true} />
-                    </div>
-                  ))}
-                  {(spell.patterns || []).length > 4 && (
-                    <div className="w-8 h-8 flex items-center justify-center bg-slate-900 rounded border border-slate-800 text-[10px] text-slate-500 font-bold">
-                      +{(spell.patterns || []).length - 4}
-                    </div>
-                  )}
-                </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+          {/* Власні закляття */}
+          <div className="space-y-3">
+            <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2">Мої закляття</h2>
+            {spells.length === 0 ? (
+              <div className="text-center py-6 text-slate-600 border border-dashed border-slate-800 rounded-xl">
+                <p className="text-xs">Порожньо</p>
               </div>
-            ))
-          )}
+            ) : (
+              spells.map(spell => (
+                <div 
+                  key={spell.id} 
+                  onClick={() => setActiveSpell(spell)}
+                  className={`p-4 rounded-xl border cursor-pointer transition-all ${activeSpell?.id === spell.id ? 'bg-purple-900/20 border-purple-500/50' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-bold text-slate-100 truncate pr-4">{spell.name}</h3>
+                    <button onClick={(e) => handleDeleteSpell(spell.id, e)} className="text-slate-600 hover:text-red-400 p-1 rounded transition-colors" title="Видалити">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-500 line-clamp-2 mb-3">{spell.description || 'Немає опису'}</p>
+                  <div className="flex gap-1 overflow-hidden">
+                    {(spell.patterns || []).slice(0, 4).map((p: any, i: number) => {
+                      const path = typeof p === 'string' ? parseHexAngles(p) : p.path;
+                      return (
+                        <div key={typeof p === 'string' ? `${i}-${p}` : p.id} className="w-8 h-8 bg-slate-900 rounded border border-slate-800 p-0.5">
+                          <HexMiniature path={path} fade={true} />
+                        </div>
+                      );
+                    })}
+                    {(spell.patterns || []).length > 4 && (
+                      <div className="w-8 h-8 flex items-center justify-center bg-slate-900 rounded border border-slate-800 text-[10px] text-slate-500 font-bold">
+                        +{(spell.patterns || []).length - 4}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
@@ -246,20 +282,20 @@ export default function BookView() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                <div className="bg-slate-900 p-1 rounded-xl border border-slate-800 flex mr-2">
-                  <button 
-                    onClick={() => setViewMode('detailed')} 
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'detailed' ? 'bg-purple-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
-                  >
-                    Детально
-                  </button>
-                  <button 
-                    onClick={() => setViewMode('general')} 
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'general' ? 'bg-purple-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
-                  >
-                    Загально
-                  </button>
-                </div>
+                <button 
+                  onClick={handleDownloadSingleSpell}
+                  className="flex items-center justify-center w-12 h-12 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-all"
+                  title="Скачати закляття (JSON)"
+                >
+                  <Download size={20} />
+                </button>
+                <button 
+                  onClick={handleCopyPrompt}
+                  className="flex items-center justify-center w-12 h-12 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-all"
+                  title="Копіювати промпт закляття"
+                >
+                  <Copy size={20} />
+                </button>
                 <button 
                   onClick={handleShareSpell}
                   className="flex items-center justify-center w-12 h-12 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-all"
@@ -283,105 +319,44 @@ export default function BookView() {
               </div>
             </div>
 
-            {viewMode === 'detailed' ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Гліфи */}
-                <div className="space-y-4">
-                  <h3 className="text-xl font-bold text-purple-400 border-b border-slate-800 pb-2">Гліфи ({activeSpell.patterns?.length || 0})</h3>
-                  <div className="space-y-4">
-                    {(activeSpell.patterns || []).map((p: any, i: number) => {
-                      const { angles } = pathToHexAngles(p.path);
-                      return (
-                      <div key={p.id} className="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex gap-4 items-center">
-                        <div className="w-24 h-24 bg-slate-950 rounded-xl border border-slate-800 p-2 shrink-0">
-                          <HexMiniature path={p.path} fade={true} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-sm text-slate-500 mb-1">Гліф #{i + 1}</div>
-                          <div className="font-bold text-slate-200 mb-1 truncate">{p.name || 'Без назви'}</div>
-                          {p.description && (
-                            <div className="text-xs text-slate-400 mb-2 line-clamp-2" title={p.description}>
-                              {p.description}
-                            </div>
-                          )}
-                          <div className="text-xs font-mono text-purple-400 bg-purple-900/20 px-2 py-1 rounded inline-block break-all">
-                            {angles || 'Початковий вузол'}
-                          </div>
-                        </div>
-                      </div>
-                    )})}
-                  </div>
-                </div>
-
-                {/* Медіа */}
-                {(activeSpell.imageUrl || activeSpell.videoUrl) && (
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-bold text-purple-400 border-b border-slate-800 pb-2">Медіа</h3>
-                    
-                    {/* Зображення */}
-                    {activeSpell.imageUrl && (
-                      <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-4">
-                        <div className="flex items-center gap-2 text-slate-300 font-medium">
-                          <ImageIcon size={18} /> Зображення
-                        </div>
-                        <div className="relative group rounded-xl overflow-hidden border border-slate-700">
-                          <img src={activeSpell.imageUrl} alt="Spell" className="w-full h-auto object-cover" />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Відео */}
-                    {activeSpell.videoUrl && (
-                      <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-4">
-                        <div className="flex items-center gap-2 text-slate-300 font-medium">
-                          <Video size={18} /> Відео
-                        </div>
-                        <div className="space-y-2">
-                          <div className="aspect-video rounded-xl overflow-hidden border border-slate-700 bg-black">
-                            <iframe 
-                              src={activeSpell.videoUrl.replace('watch?v=', 'embed/')} 
-                              className="w-full h-full" 
-                              allowFullScreen 
-                              title="Spell Video"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+            <div className="space-y-6">
+              <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h3 className="text-xl font-bold text-purple-400">Послідовність гліфів ({activeSpell.patterns?.length || 0})</h3>
+                <span className="text-xs text-slate-500">Подвійний клік для перегляду анімації</span>
               </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-                  <h3 className="text-xl font-bold text-purple-400">Послідовність гліфів ({activeSpell.patterns?.length || 0})</h3>
-                  <span className="text-xs text-slate-500">Подвійний клік для перегляду анімації</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {(activeSpell.patterns || []).map((p: any, i: number) => {
-                    const { angles } = pathToHexAngles(p.path);
-                    return (
-                    <div 
-                      key={p.id} 
-                      onDoubleClick={() => { setIsPlaying(true); setCurrentGlyphIndex(i); }}
-                      className="bg-slate-900 p-3 rounded-2xl border border-slate-800 flex flex-col items-center gap-2 hover:border-purple-500/50 transition-all cursor-pointer group hover:bg-slate-800/50"
-                      title="Подвійний клік для перегляду"
-                    >
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {(activeSpell.patterns || []).map((p: any, i: number) => {
+                  const isString = typeof p === 'string';
+                  const path = isString ? parseHexAngles(p) : p.path;
+                  const angles = isString ? p : pathToHexAngles(p.path).angles;
+                  const name = isString ? '' : p.name;
+
+                  return (
+                  <div 
+                    key={isString ? `${i}-${p}` : p.id} 
+                    onDoubleClick={() => { setIsPlaying(true); setCurrentGlyphIndex(i); }}
+                    className="bg-slate-900 p-3 rounded-2xl border border-slate-800 flex flex-col items-center gap-2 hover:border-purple-500/50 transition-all cursor-pointer group hover:bg-slate-800/50"
+                    title="Подвійний клік для перегляду"
+                  >
                       <div className="w-full aspect-square bg-slate-950 rounded-xl border border-slate-800 p-2 group-hover:bg-slate-950 transition-colors">
-                        <HexMiniature path={p.path} fade={true} />
+                        <HexMiniature path={path} fade={true} />
                       </div>
                       <div className="text-center w-full">
                         <div className="text-[10px] text-slate-500">#{i + 1}</div>
-                        <div className="text-xs font-bold text-slate-300 truncate w-full">{p.name || 'Без назви'}</div>
+                        <div className="text-xs font-bold text-slate-300 truncate w-full">{name || (angles.startsWith('aqaa') || angles.startsWith('dedd') ? `Число: ${parseNumericalReflection(angles)}` : 'Без назви')}</div>
                         <div className="text-[10px] font-mono text-purple-400/70 mt-1 truncate w-full" title={angles || 'Початковий вузол'}>
                           {angles || 'Початковий вузол'}
                         </div>
+                        {(angles.startsWith('aqaa') || angles.startsWith('dedd')) && (
+                          <div className="text-[10px] font-bold text-orange-400 bg-orange-900/30 border border-orange-500/30 px-1.5 py-0.5 rounded mt-1 inline-block">
+                            {parseNumericalReflection(angles)}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )})}
                 </div>
               </div>
-            )}
           </div>
         ) : (
           <div className="h-full hidden md:flex flex-col items-center justify-center text-slate-500">
@@ -417,7 +392,7 @@ export default function BookView() {
           <div className="w-[90vw] max-w-[500px] aspect-square bg-slate-900 rounded-3xl border border-slate-800 p-4 md:p-8 shadow-2xl relative flex items-center justify-center z-10 pointer-events-none">
             {/* Key is used to force re-render and restart animation when index changes */}
             <AnimatedHex 
-              key={`${activeSpell.id}-${currentGlyphIndex}`} 
+              key={`${activeSpell.id}-${currentGlyphIndex}-${animationKey}`} 
               path={activeSpell.patterns[currentGlyphIndex]?.path || []} 
             />
           </div>
@@ -426,6 +401,16 @@ export default function BookView() {
             <h3 className="text-xl font-bold text-slate-200 mb-2">
               {activeSpell.patterns[currentGlyphIndex]?.name || `Гліф #${currentGlyphIndex + 1}`}
             </h3>
+            
+            <div className="flex items-center gap-4 justify-center pointer-events-auto mb-6">
+              <button 
+                onClick={(e) => { e.stopPropagation(); setAnimationKey(prev => prev + 1); }}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-all border border-slate-700"
+              >
+                <RefreshCw size={14} /> Повторити анімацію
+              </button>
+            </div>
+
             <p className="text-slate-500 text-sm mb-8 hidden md:block">Натисніть Enter, пробіл або клікніть по краях екрану</p>
             <p className="text-slate-500 text-sm mb-8 md:hidden">Свайпніть або тапніть по краях екрану</p>
             
